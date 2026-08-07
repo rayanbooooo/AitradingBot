@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy Policy | CloudCove Web</title>
+<title data-i18n="p_title">Privacy Policy | CloudCove Web</title>
 <meta name="description" content="Privacy Policy for CloudCove Web, a provider of custom websites and 24/7 AI receptionist services for local businesses.">
 <style>
   :root {
@@ -25,6 +25,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
   }
   header a.brand {
     font-weight: 700;
@@ -32,11 +33,44 @@
     color: var(--text);
     text-decoration: none;
   }
+  header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
   header a.back {
     font-size: 14px;
     font-weight: 500;
     color: var(--brand);
     text-decoration: none;
+    white-space: nowrap;
+  }
+  .cc-lang-select {
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #cc-lang-floating {
+    display: none;
+    position: fixed;
+    left: 14px;
+    bottom: 14px;
+    z-index: 9999;
+  }
+  #cc-lang-floating .cc-lang-select {
+    background: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  }
+  @media (max-width: 640px) {
+    #cc-lang-nav { display: none !important; }
+    #cc-lang-floating { display: block; }
   }
   main {
     max-width: 760px;
@@ -81,64 +115,304 @@
 <body>
 <header>
   <a class="brand" href="/">CloudCove Web</a>
-  <a class="back" href="/">&larr; Back to home</a>
+  <div class="header-right">
+    <div id="cc-lang-nav">
+      <select class="cc-lang-select" aria-label="Language">
+        <option value="en">English</option>
+        <option value="nl">Nederlands</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </div>
+    <a class="back" href="/" data-i18n="p_back">&larr; Back to home</a>
+  </div>
 </header>
 
+<div id="cc-lang-floating">
+  <select class="cc-lang-select" aria-label="Language">
+    <option value="en">English</option>
+    <option value="nl">Nederlands</option>
+    <option value="fr">Français</option>
+    <option value="es">Español</option>
+    <option value="de">Deutsch</option>
+  </select>
+</div>
+
 <main>
-  <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: August 6, 2026</p>
+  <h1 data-i18n="p_h1">Privacy Policy</h1>
+  <p class="updated" data-i18n="p_updated">Last updated: August 6, 2026</p>
 
-  <p>CloudCove Web ("CloudCove Web," "we," "us," or "our") builds custom websites and provides a 24/7 AI receptionist service that answers calls and captures leads for local businesses. This Privacy Policy explains what information we collect, how we use it, and the choices you have.</p>
+  <p data-i18n="p_intro">CloudCove Web ("CloudCove Web," "we," "us," or "our") builds custom websites and provides a 24/7 AI receptionist service that answers calls and captures leads for local businesses. This Privacy Policy explains what information we collect, how we use it, and the choices you have.</p>
 
-  <h2>1. Information We Collect</h2>
+  <h2 data-i18n="p_h2_1">1. Information We Collect</h2>
   <ul>
-    <li><strong>Contact information</strong> you provide when booking a call, filling out a form, or contacting us, such as your name, email address, phone number, and business details.</li>
-    <li><strong>Call data</strong> processed by our AI receptionist, including call recordings, transcripts, and caller-provided details, used to answer calls and capture leads on behalf of our business clients.</li>
-    <li><strong>Website usage data</strong> such as pages visited, browser type, device information, and referral source, collected automatically through standard analytics tools.</li>
-    <li><strong>Communications</strong> you send us, including emails and messages, which we may retain to respond to you and improve our services.</li>
+    <li data-i18n="p_s1_li1"><strong>Contact information</strong> you provide when booking a call, filling out a form, or contacting us, such as your name, email address, phone number, and business details.</li>
+    <li data-i18n="p_s1_li2"><strong>Call data</strong> processed by our AI receptionist, including call recordings, transcripts, and caller-provided details, used to answer calls and capture leads on behalf of our business clients.</li>
+    <li data-i18n="p_s1_li3"><strong>Website usage data</strong> such as pages visited, browser type, device information, and referral source, collected automatically through standard analytics tools.</li>
+    <li data-i18n="p_s1_li4"><strong>Communications</strong> you send us, including emails and messages, which we may retain to respond to you and improve our services.</li>
   </ul>
 
-  <h2>2. How We Use Information</h2>
+  <h2 data-i18n="p_h2_2">2. How We Use Information</h2>
   <ul>
-    <li>To provide, operate, and maintain our website and AI receptionist services.</li>
-    <li>To respond to inquiries, schedule calls, and deliver customer support.</li>
-    <li>To improve our services, including training and tuning the AI receptionist to better handle calls.</li>
-    <li>To send service-related updates and, where permitted, marketing communications you can opt out of at any time.</li>
-    <li>To detect, prevent, and address fraud, abuse, or security issues.</li>
+    <li data-i18n="p_s2_li1">To provide, operate, and maintain our website and AI receptionist services.</li>
+    <li data-i18n="p_s2_li2">To respond to inquiries, schedule calls, and deliver customer support.</li>
+    <li data-i18n="p_s2_li3">To improve our services, including training and tuning the AI receptionist to better handle calls.</li>
+    <li data-i18n="p_s2_li4">To send service-related updates and, where permitted, marketing communications you can opt out of at any time.</li>
+    <li data-i18n="p_s2_li5">To detect, prevent, and address fraud, abuse, or security issues.</li>
   </ul>
 
-  <h2>3. How We Share Information</h2>
-  <p>We do not sell your personal information. We may share information with:</p>
+  <h2 data-i18n="p_h2_3">3. How We Share Information</h2>
+  <p data-i18n="p_s3_intro">We do not sell your personal information. We may share information with:</p>
   <ul>
-    <li>Service providers who help us operate our website, hosting, analytics, communications, and AI voice infrastructure, under confidentiality obligations.</li>
-    <li>The business client on whose behalf a call was answered, when you interact with our AI receptionist for that business.</li>
-    <li>Authorities, when required to comply with the law or to protect our rights, users, or the public.</li>
+    <li data-i18n="p_s3_li1">Service providers who help us operate our website, hosting, analytics, communications, and AI voice infrastructure, under confidentiality obligations.</li>
+    <li data-i18n="p_s3_li2">The business client on whose behalf a call was answered, when you interact with our AI receptionist for that business.</li>
+    <li data-i18n="p_s3_li3">Authorities, when required to comply with the law or to protect our rights, users, or the public.</li>
   </ul>
 
-  <h2>4. Data Retention</h2>
-  <p>We retain personal information for as long as necessary to provide our services and fulfill the purposes described in this policy, unless a longer retention period is required by law.</p>
+  <h2 data-i18n="p_h2_4">4. Data Retention</h2>
+  <p data-i18n="p_s4_text">We retain personal information for as long as necessary to provide our services and fulfill the purposes described in this policy, unless a longer retention period is required by law.</p>
 
-  <h2>5. Your Choices</h2>
+  <h2 data-i18n="p_h2_5">5. Your Choices</h2>
   <ul>
-    <li>You may request access to, correction of, or deletion of your personal information by contacting us at the email below.</li>
-    <li>You may opt out of marketing emails using the unsubscribe link included in those messages.</li>
+    <li data-i18n="p_s5_li1">You may request access to, correction of, or deletion of your personal information by contacting us at the email below.</li>
+    <li data-i18n="p_s5_li2">You may opt out of marketing emails using the unsubscribe link included in those messages.</li>
   </ul>
 
-  <h2>6. Security</h2>
-  <p>We use reasonable administrative, technical, and physical safeguards designed to protect personal information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
+  <h2 data-i18n="p_h2_6">6. Security</h2>
+  <p data-i18n="p_s6_text">We use reasonable administrative, technical, and physical safeguards designed to protect personal information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
 
-  <h2>7. Children's Privacy</h2>
-  <p>Our services are not directed to individuals under 16, and we do not knowingly collect personal information from children.</p>
+  <h2 data-i18n="p_h2_7">7. Children's Privacy</h2>
+  <p data-i18n="p_s7_text">Our services are not directed to individuals under 16, and we do not knowingly collect personal information from children.</p>
 
-  <h2>8. Changes to This Policy</h2>
-  <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last updated" date.</p>
+  <h2 data-i18n="p_h2_8">8. Changes to This Policy</h2>
+  <p data-i18n="p_s8_text">We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last updated" date.</p>
 
-  <h2>9. Contact Us</h2>
-  <p>If you have questions about this Privacy Policy or your personal information, contact us at <a href="mailto:info@cloudcoveweb.com">info@cloudcoveweb.com</a>.</p>
+  <h2 data-i18n="p_h2_9">9. Contact Us</h2>
+  <p data-i18n="p_s9_text">If you have questions about this Privacy Policy or your personal information, contact us at <a href="mailto:info@cloudcoveweb.com">info@cloudcoveweb.com</a>.</p>
 </main>
 
-<footer>
+<footer data-i18n="p_footer">
   &copy; 2026 CloudCove Web. All rights reserved.
 </footer>
+
+<script>
+window.CC_I18N = {
+  "en": {
+    "p_title": "Privacy Policy | CloudCove Web",
+    "p_back": "&larr; Back to home",
+    "p_h1": "Privacy Policy",
+    "p_updated": "Last updated: August 6, 2026",
+    "p_intro": "CloudCove Web (\"CloudCove Web,\" \"we,\" \"us,\" or \"our\") builds custom websites and provides a 24/7 AI receptionist service that answers calls and captures leads for local businesses. This Privacy Policy explains what information we collect, how we use it, and the choices you have.",
+    "p_h2_1": "1. Information We Collect",
+    "p_s1_li1": "<strong>Contact information</strong> you provide when booking a call, filling out a form, or contacting us, such as your name, email address, phone number, and business details.",
+    "p_s1_li2": "<strong>Call data</strong> processed by our AI receptionist, including call recordings, transcripts, and caller-provided details, used to answer calls and capture leads on behalf of our business clients.",
+    "p_s1_li3": "<strong>Website usage data</strong> such as pages visited, browser type, device information, and referral source, collected automatically through standard analytics tools.",
+    "p_s1_li4": "<strong>Communications</strong> you send us, including emails and messages, which we may retain to respond to you and improve our services.",
+    "p_h2_2": "2. How We Use Information",
+    "p_s2_li1": "To provide, operate, and maintain our website and AI receptionist services.",
+    "p_s2_li2": "To respond to inquiries, schedule calls, and deliver customer support.",
+    "p_s2_li3": "To improve our services, including training and tuning the AI receptionist to better handle calls.",
+    "p_s2_li4": "To send service-related updates and, where permitted, marketing communications you can opt out of at any time.",
+    "p_s2_li5": "To detect, prevent, and address fraud, abuse, or security issues.",
+    "p_h2_3": "3. How We Share Information",
+    "p_s3_intro": "We do not sell your personal information. We may share information with:",
+    "p_s3_li1": "Service providers who help us operate our website, hosting, analytics, communications, and AI voice infrastructure, under confidentiality obligations.",
+    "p_s3_li2": "The business client on whose behalf a call was answered, when you interact with our AI receptionist for that business.",
+    "p_s3_li3": "Authorities, when required to comply with the law or to protect our rights, users, or the public.",
+    "p_h2_4": "4. Data Retention",
+    "p_s4_text": "We retain personal information for as long as necessary to provide our services and fulfill the purposes described in this policy, unless a longer retention period is required by law.",
+    "p_h2_5": "5. Your Choices",
+    "p_s5_li1": "You may request access to, correction of, or deletion of your personal information by contacting us at the email below.",
+    "p_s5_li2": "You may opt out of marketing emails using the unsubscribe link included in those messages.",
+    "p_h2_6": "6. Security",
+    "p_s6_text": "We use reasonable administrative, technical, and physical safeguards designed to protect personal information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.",
+    "p_h2_7": "7. Children's Privacy",
+    "p_s7_text": "Our services are not directed to individuals under 16, and we do not knowingly collect personal information from children.",
+    "p_h2_8": "8. Changes to This Policy",
+    "p_s8_text": "We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated \"Last updated\" date.",
+    "p_h2_9": "9. Contact Us",
+    "p_s9_text": "If you have questions about this Privacy Policy or your personal information, contact us at <a href=\"mailto:info@cloudcoveweb.com\">info@cloudcoveweb.com</a>.",
+    "p_footer": "&copy; 2026 CloudCove Web. All rights reserved."
+  },
+  "nl": {
+    "p_title": "Privacybeleid | CloudCove Web",
+    "p_back": "&larr; Terug naar home",
+    "p_h1": "Privacybeleid",
+    "p_updated": "Laatst bijgewerkt: 6 augustus 2026",
+    "p_intro": "CloudCove Web (\"CloudCove Web,\" \"we,\" \"ons,\" of \"onze\") bouwt websites op maat en biedt een 24/7 AI receptionist-dienst die oproepen beantwoordt en leads vastlegt voor lokale bedrijven. Dit Privacybeleid legt uit welke gegevens we verzamelen, hoe we ze gebruiken en welke keuzes je hebt.",
+    "p_h2_1": "1. Gegevens die we verzamelen",
+    "p_s1_li1": "<strong>Contactgegevens</strong> die je verstrekt bij het boeken van een gesprek, het invullen van een formulier of het contacteren van ons, zoals je naam, e-mailadres, telefoonnummer en bedrijfsgegevens.",
+    "p_s1_li2": "<strong>Gespreksgegevens</strong> die door onze AI receptionist worden verwerkt, waaronder opnames, transcripties en door de beller verstrekte details, gebruikt om oproepen te beantwoorden en leads vast te leggen namens onze zakelijke klanten.",
+    "p_s1_li3": "<strong>Websitegebruiksgegevens</strong> zoals bezochte pagina's, browsertype, apparaatinformatie en verwijzingsbron, automatisch verzameld via standaard analysetools.",
+    "p_s1_li4": "<strong>Communicatie</strong> die je ons stuurt, waaronder e-mails en berichten, die we kunnen bewaren om je te antwoorden en onze diensten te verbeteren.",
+    "p_h2_2": "2. Hoe we gegevens gebruiken",
+    "p_s2_li1": "Om onze website en AI receptionist-diensten te leveren, uit te voeren en te onderhouden.",
+    "p_s2_li2": "Om te reageren op vragen, gesprekken in te plannen en klantenservice te bieden.",
+    "p_s2_li3": "Om onze diensten te verbeteren, inclusief het trainen en afstemmen van de AI receptionist voor betere gespreksafhandeling.",
+    "p_s2_li4": "Om servicegerelateerde updates en, waar toegestaan, marketingcommunicatie te sturen waarvoor je je op elk moment kunt afmelden.",
+    "p_s2_li5": "Om fraude, misbruik of beveiligingsproblemen op te sporen, te voorkomen en aan te pakken.",
+    "p_h2_3": "3. Hoe we gegevens delen",
+    "p_s3_intro": "We verkopen je persoonsgegevens niet. We kunnen gegevens delen met:",
+    "p_s3_li1": "Dienstverleners die ons helpen bij het beheren van onze website, hosting, analyses, communicatie en AI voice-infrastructuur, onder geheimhoudingsverplichtingen.",
+    "p_s3_li2": "Het bedrijf namens wie een oproep werd beantwoord, wanneer je contact hebt met onze AI receptionist voor dat bedrijf.",
+    "p_s3_li3": "Autoriteiten, indien vereist om aan de wet te voldoen of om onze rechten, gebruikers of het publiek te beschermen.",
+    "p_h2_4": "4. Bewaartermijn",
+    "p_s4_text": "We bewaren persoonsgegevens zo lang als nodig is om onze diensten te leveren en de doelen van dit beleid te vervullen, tenzij een langere bewaartermijn wettelijk verplicht is.",
+    "p_h2_5": "5. Jouw keuzes",
+    "p_s5_li1": "Je kunt toegang tot, correctie van of verwijdering van je persoonsgegevens aanvragen door contact met ons op te nemen via onderstaand e-mailadres.",
+    "p_s5_li2": "Je kunt je afmelden voor marketing-e-mails via de afmeldlink in die berichten.",
+    "p_h2_6": "6. Beveiliging",
+    "p_s6_text": "We gebruiken redelijke administratieve, technische en fysieke maatregelen om persoonsgegevens te beschermen. Geen enkele methode van verzending of opslag is volledig veilig, en we kunnen absolute veiligheid niet garanderen.",
+    "p_h2_7": "7. Privacy van kinderen",
+    "p_s7_text": "Onze diensten zijn niet gericht op personen jonger dan 16 jaar, en we verzamelen niet bewust persoonsgegevens van kinderen.",
+    "p_h2_8": "8. Wijzigingen in dit beleid",
+    "p_s8_text": "We kunnen dit Privacybeleid van tijd tot tijd bijwerken. Wijzigingen worden op deze pagina geplaatst met een bijgewerkte datum \"Laatst bijgewerkt\".",
+    "p_h2_9": "9. Contact",
+    "p_s9_text": "Als je vragen hebt over dit Privacybeleid of je persoonsgegevens, neem dan contact met ons op via <a href=\"mailto:info@cloudcoveweb.com\">info@cloudcoveweb.com</a>.",
+    "p_footer": "&copy; 2026 CloudCove Web. Alle rechten voorbehouden."
+  },
+  "fr": {
+    "p_title": "Politique de confidentialité | CloudCove Web",
+    "p_back": "&larr; Retour à l'accueil",
+    "p_h1": "Politique de confidentialité",
+    "p_updated": "Dernière mise à jour : 6 août 2026",
+    "p_intro": "CloudCove Web (« CloudCove Web », « nous », « notre ») conçoit des sites web sur mesure et propose un service de réceptionniste IA disponible 24/7 qui répond aux appels et capte des prospects pour les entreprises locales. Cette politique de confidentialité explique quelles informations nous collectons, comment nous les utilisons et les choix qui s'offrent à vous.",
+    "p_h2_1": "1. Informations que nous collectons",
+    "p_s1_li1": "<strong>Informations de contact</strong> que vous fournissez lors de la réservation d'un appel, du remplissage d'un formulaire ou d'une prise de contact, telles que votre nom, adresse e-mail, numéro de téléphone et informations sur votre entreprise.",
+    "p_s1_li2": "<strong>Données d'appel</strong> traitées par notre réceptionniste IA, y compris les enregistrements, transcriptions et informations fournies par l'appelant, utilisées pour répondre aux appels et capter des prospects pour le compte de nos clients professionnels.",
+    "p_s1_li3": "<strong>Données d'utilisation du site</strong> telles que les pages visitées, le type de navigateur, les informations sur l'appareil et la source de référence, collectées automatiquement via des outils d'analyse standard.",
+    "p_s1_li4": "<strong>Communications</strong> que vous nous envoyez, y compris les e-mails et messages, que nous pouvons conserver pour vous répondre et améliorer nos services.",
+    "p_h2_2": "2. Comment nous utilisons les informations",
+    "p_s2_li1": "Pour fournir, exploiter et maintenir notre site web et nos services de réceptionniste IA.",
+    "p_s2_li2": "Pour répondre aux demandes, planifier des appels et assurer le support client.",
+    "p_s2_li3": "Pour améliorer nos services, y compris la formation et l'ajustement du réceptionniste IA pour mieux gérer les appels.",
+    "p_s2_li4": "Pour envoyer des mises à jour liées au service et, lorsque cela est autorisé, des communications marketing dont vous pouvez vous désabonner à tout moment.",
+    "p_s2_li5": "Pour détecter, prévenir et traiter la fraude, les abus ou les problèmes de sécurité.",
+    "p_h2_3": "3. Comment nous partageons les informations",
+    "p_s3_intro": "Nous ne vendons pas vos informations personnelles. Nous pouvons partager des informations avec :",
+    "p_s3_li1": "Des prestataires de services qui nous aident à exploiter notre site web, notre hébergement, nos analyses, nos communications et notre infrastructure de voix IA, sous obligation de confidentialité.",
+    "p_s3_li2": "L'entreprise cliente pour le compte de laquelle un appel a été traité, lorsque vous interagissez avec notre réceptionniste IA pour cette entreprise.",
+    "p_s3_li3": "Les autorités, lorsque cela est requis pour se conformer à la loi ou pour protéger nos droits, nos utilisateurs ou le public.",
+    "p_h2_4": "4. Conservation des données",
+    "p_s4_text": "Nous conservons les informations personnelles aussi longtemps que nécessaire pour fournir nos services et remplir les objectifs décrits dans cette politique, sauf si une durée de conservation plus longue est requise par la loi.",
+    "p_h2_5": "5. Vos choix",
+    "p_s5_li1": "Vous pouvez demander l'accès, la correction ou la suppression de vos informations personnelles en nous contactant à l'adresse e-mail ci-dessous.",
+    "p_s5_li2": "Vous pouvez vous désabonner des e-mails marketing via le lien de désabonnement inclus dans ces messages.",
+    "p_h2_6": "6. Sécurité",
+    "p_s6_text": "Nous utilisons des mesures de protection administratives, techniques et physiques raisonnables conçues pour protéger les informations personnelles. Aucune méthode de transmission ou de stockage n'est totalement sécurisée, et nous ne pouvons garantir une sécurité absolue.",
+    "p_h2_7": "7. Confidentialité des mineurs",
+    "p_s7_text": "Nos services ne s'adressent pas aux personnes de moins de 16 ans, et nous ne collectons pas sciemment des informations personnelles auprès d'enfants.",
+    "p_h2_8": "8. Modifications de cette politique",
+    "p_s8_text": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Les modifications seront publiées sur cette page avec une date de « Dernière mise à jour » actualisée.",
+    "p_h2_9": "9. Nous contacter",
+    "p_s9_text": "Si vous avez des questions concernant cette politique de confidentialité ou vos informations personnelles, contactez-nous à <a href=\"mailto:info@cloudcoveweb.com\">info@cloudcoveweb.com</a>.",
+    "p_footer": "&copy; 2026 CloudCove Web. Tous droits réservés."
+  },
+  "es": {
+    "p_title": "Política de privacidad | CloudCove Web",
+    "p_back": "&larr; Volver al inicio",
+    "p_h1": "Política de privacidad",
+    "p_updated": "Última actualización: 6 de agosto de 2026",
+    "p_intro": "CloudCove Web (\"CloudCove Web\", \"nosotros\" o \"nuestro\") crea sitios web a medida y ofrece un servicio de recepcionista de IA disponible 24/7 que responde llamadas y capta clientes potenciales para negocios locales. Esta Política de privacidad explica qué información recopilamos, cómo la usamos y qué opciones tienes.",
+    "p_h2_1": "1. Información que recopilamos",
+    "p_s1_li1": "<strong>Información de contacto</strong> que proporcionas al reservar una llamada, completar un formulario o ponerte en contacto con nosotros, como tu nombre, correo electrónico, número de teléfono y datos de tu negocio.",
+    "p_s1_li2": "<strong>Datos de llamadas</strong> procesados por nuestra recepcionista de IA, incluidas grabaciones, transcripciones y datos proporcionados por el interlocutor, utilizados para responder llamadas y captar clientes potenciales en nombre de nuestros clientes empresariales.",
+    "p_s1_li3": "<strong>Datos de uso del sitio web</strong>, como páginas visitadas, tipo de navegador, información del dispositivo y fuente de referencia, recopilados automáticamente mediante herramientas de análisis estándar.",
+    "p_s1_li4": "<strong>Comunicaciones</strong> que nos envías, incluidos correos electrónicos y mensajes, que podemos conservar para responderte y mejorar nuestros servicios.",
+    "p_h2_2": "2. Cómo usamos la información",
+    "p_s2_li1": "Para proporcionar, operar y mantener nuestro sitio web y nuestros servicios de recepcionista de IA.",
+    "p_s2_li2": "Para responder a consultas, programar llamadas y ofrecer atención al cliente.",
+    "p_s2_li3": "Para mejorar nuestros servicios, incluido el entrenamiento y ajuste de la recepcionista de IA para gestionar mejor las llamadas.",
+    "p_s2_li4": "Para enviar actualizaciones relacionadas con el servicio y, cuando esté permitido, comunicaciones de marketing de las que puedes darte de baja en cualquier momento.",
+    "p_s2_li5": "Para detectar, prevenir y abordar fraudes, abusos o problemas de seguridad.",
+    "p_h2_3": "3. Cómo compartimos la información",
+    "p_s3_intro": "No vendemos tu información personal. Podemos compartir información con:",
+    "p_s3_li1": "Proveedores de servicios que nos ayudan a operar nuestro sitio web, alojamiento, análisis, comunicaciones e infraestructura de voz con IA, bajo obligaciones de confidencialidad.",
+    "p_s3_li2": "La empresa cliente en cuyo nombre se respondió una llamada, cuando interactúas con nuestra recepcionista de IA para esa empresa.",
+    "p_s3_li3": "Autoridades, cuando sea necesario para cumplir con la ley o proteger nuestros derechos, a los usuarios o al público.",
+    "p_h2_4": "4. Conservación de datos",
+    "p_s4_text": "Conservamos la información personal durante el tiempo necesario para prestar nuestros servicios y cumplir los fines descritos en esta política, salvo que la ley exija un período de conservación más largo.",
+    "p_h2_5": "5. Tus opciones",
+    "p_s5_li1": "Puedes solicitar el acceso, la corrección o la eliminación de tu información personal escribiéndonos al correo electrónico indicado a continuación.",
+    "p_s5_li2": "Puedes darte de baja de los correos de marketing mediante el enlace de cancelación incluido en esos mensajes.",
+    "p_h2_6": "6. Seguridad",
+    "p_s6_text": "Utilizamos medidas administrativas, técnicas y físicas razonables diseñadas para proteger la información personal. Ningún método de transmisión o almacenamiento es completamente seguro, y no podemos garantizar una seguridad absoluta.",
+    "p_h2_7": "7. Privacidad de menores",
+    "p_s7_text": "Nuestros servicios no están dirigidos a personas menores de 16 años, y no recopilamos conscientemente información personal de menores.",
+    "p_h2_8": "8. Cambios a esta política",
+    "p_s8_text": "Podemos actualizar esta Política de privacidad de vez en cuando. Los cambios se publicarán en esta página con una fecha de \"Última actualización\" renovada.",
+    "p_h2_9": "9. Contáctanos",
+    "p_s9_text": "Si tienes preguntas sobre esta Política de privacidad o tu información personal, contáctanos en <a href=\"mailto:info@cloudcoveweb.com\">info@cloudcoveweb.com</a>.",
+    "p_footer": "&copy; 2026 CloudCove Web. Todos los derechos reservados."
+  },
+  "de": {
+    "p_title": "Datenschutzerklärung | CloudCove Web",
+    "p_back": "&larr; Zurück zur Startseite",
+    "p_h1": "Datenschutzerklärung",
+    "p_updated": "Zuletzt aktualisiert: 6. August 2026",
+    "p_intro": "CloudCove Web („CloudCove Web“, „wir“ oder „unser“) entwickelt individuelle Websites und bietet einen 24/7 KI-Empfangsdienst, der Anrufe entgegennimmt und Leads für lokale Unternehmen erfasst. Diese Datenschutzerklärung erläutert, welche Informationen wir erfassen, wie wir sie verwenden und welche Wahlmöglichkeiten Sie haben.",
+    "p_h2_1": "1. Von uns erfasste Informationen",
+    "p_s1_li1": "<strong>Kontaktinformationen</strong>, die Sie bei der Buchung eines Anrufs, dem Ausfüllen eines Formulars oder der Kontaktaufnahme angeben, wie Name, E-Mail-Adresse, Telefonnummer und Unternehmensangaben.",
+    "p_s1_li2": "<strong>Anrufdaten</strong>, die von unserem KI-Empfang verarbeitet werden, einschließlich Aufzeichnungen, Transkripten und vom Anrufer angegebenen Details, um Anrufe zu beantworten und Leads im Auftrag unserer Geschäftskunden zu erfassen.",
+    "p_s1_li3": "<strong>Website-Nutzungsdaten</strong> wie besuchte Seiten, Browsertyp, Geräteinformationen und Verweisquelle, automatisch erfasst über gängige Analysetools.",
+    "p_s1_li4": "<strong>Kommunikation</strong>, die Sie uns senden, einschließlich E-Mails und Nachrichten, die wir aufbewahren können, um Ihnen zu antworten und unsere Dienste zu verbessern.",
+    "p_h2_2": "2. Wie wir Informationen verwenden",
+    "p_s2_li1": "Um unsere Website und unsere KI-Empfangsdienste bereitzustellen, zu betreiben und zu pflegen.",
+    "p_s2_li2": "Um auf Anfragen zu reagieren, Anrufe zu planen und Kundensupport zu leisten.",
+    "p_s2_li3": "Um unsere Dienste zu verbessern, einschließlich des Trainings und der Feinabstimmung des KI-Empfangs für eine bessere Anrufbearbeitung.",
+    "p_s2_li4": "Um servicebezogene Updates und, sofern zulässig, Marketingmitteilungen zu senden, von denen Sie sich jederzeit abmelden können.",
+    "p_s2_li5": "Um Betrug, Missbrauch oder Sicherheitsprobleme zu erkennen, zu verhindern und zu beheben.",
+    "p_h2_3": "3. Wie wir Informationen weitergeben",
+    "p_s3_intro": "Wir verkaufen Ihre personenbezogenen Daten nicht. Wir können Informationen weitergeben an:",
+    "p_s3_li1": "Dienstleister, die uns beim Betrieb unserer Website, unseres Hostings, unserer Analysen, unserer Kommunikation und unserer KI-Sprachinfrastruktur unterstützen, unter Vertraulichkeitsverpflichtungen.",
+    "p_s3_li2": "Den Geschäftskunden, in dessen Auftrag ein Anruf beantwortet wurde, wenn Sie mit unserem KI-Empfang für dieses Unternehmen interagieren.",
+    "p_s3_li3": "Behörden, sofern dies zur Einhaltung des Gesetzes oder zum Schutz unserer Rechte, unserer Nutzer oder der Öffentlichkeit erforderlich ist.",
+    "p_h2_4": "4. Datenspeicherung",
+    "p_s4_text": "Wir speichern personenbezogene Daten so lange, wie es zur Bereitstellung unserer Dienste und zur Erfüllung der in dieser Richtlinie beschriebenen Zwecke erforderlich ist, sofern nicht eine längere Aufbewahrungsfrist gesetzlich vorgeschrieben ist.",
+    "p_h2_5": "5. Ihre Wahlmöglichkeiten",
+    "p_s5_li1": "Sie können Zugang zu, Berichtigung oder Löschung Ihrer personenbezogenen Daten beantragen, indem Sie uns über die unten angegebene E-Mail-Adresse kontaktieren.",
+    "p_s5_li2": "Sie können sich über den in diesen Nachrichten enthaltenen Abmeldelink von Marketing-E-Mails abmelden.",
+    "p_h2_6": "6. Sicherheit",
+    "p_s6_text": "Wir setzen angemessene administrative, technische und physische Schutzmaßnahmen zum Schutz personenbezogener Daten ein. Keine Übertragungs- oder Speichermethode ist vollständig sicher, und wir können keine absolute Sicherheit garantieren.",
+    "p_h2_7": "7. Datenschutz für Kinder",
+    "p_s7_text": "Unsere Dienste richten sich nicht an Personen unter 16 Jahren, und wir erfassen wissentlich keine personenbezogenen Daten von Kindern.",
+    "p_h2_8": "8. Änderungen dieser Richtlinie",
+    "p_s8_text": "Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Änderungen werden auf dieser Seite mit einem aktualisierten Datum „Zuletzt aktualisiert“ veröffentlicht.",
+    "p_h2_9": "9. Kontakt",
+    "p_s9_text": "Wenn Sie Fragen zu dieser Datenschutzerklärung oder Ihren personenbezogenen Daten haben, kontaktieren Sie uns unter <a href=\"mailto:info@cloudcoveweb.com\">info@cloudcoveweb.com</a>.",
+    "p_footer": "&copy; 2026 CloudCove Web. Alle Rechte vorbehalten."
+  }
+};
+
+(function () {
+  function apply(lang) {
+    var dict = window.CC_I18N[lang] || window.CC_I18N.en;
+    var base = window.CC_I18N.en;
+    var els = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < els.length; i++) {
+      var key = els[i].getAttribute('data-i18n');
+      var val = dict[key] != null ? dict[key] : base[key];
+      if (val != null) els[i].innerHTML = val;
+    }
+    document.documentElement.lang = lang;
+    if (dict.p_title) document.title = dict.p_title;
+    try { localStorage.setItem('cc_lang', lang); } catch (e) {}
+    var sels = document.querySelectorAll('.cc-lang-select');
+    for (var j = 0; j < sels.length; j++) sels[j].value = lang;
+  }
+
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains('cc-lang-select')) {
+      apply(e.target.value);
+    }
+  });
+
+  var saved = 'en';
+  try { saved = localStorage.getItem('cc_lang') || 'en'; } catch (e) {}
+  if (!window.CC_I18N[saved]) saved = 'en';
+  apply(saved);
+})();
+</script>
 </body>
 </html>
