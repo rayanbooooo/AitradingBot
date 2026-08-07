@@ -11,7 +11,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 playwright install
-cp .env.example .env  # add your OPENAI_API_KEY
+cp .env.example .env  # add your OPENAI_API_KEY (and GOOGLE_MAPS_API_KEY for find_businesses.py)
 ```
 
 ## Run
@@ -22,6 +22,32 @@ python example.py
 
 `example.py` uses `SmartScraperGraph` to scrape a page and answer a
 natural-language prompt about its content via an LLM.
+
+## Business lead finder (`find_businesses.py`)
+
+Finds businesses matching a Google Places text query, keeps only the ones
+with no `website` field, and best-effort looks up an email address and
+social media links for each via ScrapeGraphAI's `SearchGraph`.
+
+```bash
+python find_businesses.py --query "restaurants in Antwerp, Belgium" --max-results 40 --out businesses.csv
+```
+
+Requires, in `.env`:
+- `GOOGLE_MAPS_API_KEY` — a Google Maps Platform key with the **Places API**
+  enabled and billing configured (https://console.cloud.google.com/).
+- `OPENAI_API_KEY` — used by the contact-lookup step.
+
+Flags:
+- `--skip-contact-lookup` — only run discovery + website filtering (fast, no LLM calls).
+- `--include-with-website` — keep every result instead of filtering to no-website businesses.
+
+**Before using this for outreach:** Google's Maps Platform Terms of Service
+restrict building contact lists or doing unsolicited messaging from Places
+data (https://cloud.google.com/maps-platform/terms), and GDPR / Belgian
+e-commerce law constrain unsolicited commercial contact with businesses
+found this way. Make sure you have a proper legal basis before emailing
+anyone on the output list.
 
 ## Known upstream issue
 

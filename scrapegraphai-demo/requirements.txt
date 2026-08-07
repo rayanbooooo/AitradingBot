@@ -1,2 +1,3 @@
 scrapegraphai
 python-dotenv
+requests
