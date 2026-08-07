@@ -11,7 +11,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 playwright install
-cp .env.example .env  # add your OPENAI_API_KEY (and GOOGLE_MAPS_API_KEY for find_businesses.py)
+cp .env.example .env  # add your ANTHROPIC_API_KEY (and GOOGLE_MAPS_API_KEY for find_businesses.py)
 ```
 
 ## Run
@@ -36,11 +36,13 @@ python find_businesses.py --query "restaurants in Antwerp, Belgium" --max-result
 Requires, in `.env`:
 - `GOOGLE_MAPS_API_KEY` — a Google Maps Platform key with the **Places API**
   enabled and billing configured (https://console.cloud.google.com/).
-- `OPENAI_API_KEY` — used by the contact-lookup step.
+- `ANTHROPIC_API_KEY` (default) or `OPENAI_API_KEY` (with `--llm-provider openai`)
+  — used by the contact-lookup step.
 
 Flags:
 - `--skip-contact-lookup` — only run discovery + website filtering (fast, no LLM calls).
 - `--include-with-website` — keep every result instead of filtering to no-website businesses.
+- `--llm-provider {anthropic,openai}` — LLM backend for contact lookup (default: `anthropic`).
 
 **Before using this for outreach:** Google's Maps Platform Terms of Service
 restrict building contact lists or doing unsolicited messaging from Places

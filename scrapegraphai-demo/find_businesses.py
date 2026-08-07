@@ -13,7 +13,8 @@ This is a two-stage pipeline:
 Requires:
   - GOOGLE_MAPS_API_KEY with the "Places API" enabled and billing set up
     (https://console.cloud.google.com/).
-  - An LLM key for scrapegraphai, e.g. OPENAI_API_KEY.
+  - ANTHROPIC_API_KEY (default LLM backend) or OPENAI_API_KEY if you pass
+    --llm-provider openai.
 
 Usage:
     python find_businesses.py --query "restaurants in Antwerp, Belgium" \
@@ -75,6 +76,28 @@ def get_place_details(place_id, api_key):
     return data.get("result", {})
 
 
+def build_llm_config(provider):
+    if provider == "anthropic":
+        return {
+            "llm": {
+                "api_key": os.environ["ANTHROPIC_API_KEY"],
+                "model": "anthropic/claude-3-5-sonnet-20240620",
+            },
+            "verbose": False,
+            "headless": True,
+        }
+    if provider == "openai":
+        return {
+            "llm": {
+                "api_key": os.environ["OPENAI_API_KEY"],
+                "model": "openai/gpt-4o-mini",
+            },
+            "verbose": False,
+            "headless": True,
+        }
+    raise ValueError(f"Unknown --llm-provider: {provider}")
+
+
 def find_contact_info(name, address, llm_config):
     prompt = (
         f"Search the web for the business '{name}' located at '{address}'. "
@@ -106,20 +129,19 @@ def main():
         action="store_true",
         help="Keep all businesses, not just ones missing a website.",
     )
+    parser.add_argument(
+        "--llm-provider",
+        choices=["anthropic", "openai"],
+        default="anthropic",
+        help="LLM backend for the contact-lookup step (default: anthropic).",
+    )
     args = parser.parse_args()
 
     maps_key = os.environ.get("GOOGLE_MAPS_API_KEY")
     if not maps_key:
         sys.exit("GOOGLE_MAPS_API_KEY is not set (add it to .env)")
 
-    llm_config = {
-        "llm": {
-            "api_key": os.environ["OPENAI_API_KEY"],
-            "model": "openai/gpt-4o-mini",
-        },
-        "verbose": False,
-        "headless": True,
-    }
+    llm_config = None if args.skip_contact_lookup else build_llm_config(args.llm_provider)
 
     print(f"Searching Google Places for: {args.query!r}")
     places = search_places(args.query, maps_key, args.max_results)

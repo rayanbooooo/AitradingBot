@@ -1,3 +1,4 @@
 scrapegraphai
+langchain-anthropic
 python-dotenv
 requests
