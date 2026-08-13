@@ -1,4 +1,8 @@
-const BASE = '/api';
+// Same-origin '/api' works when the frontend and backend are served from the
+// same host (local dev via the Vite proxy, or a VPS serving both). A
+// Vercel-hosted frontend talking to a backend on a different host needs this
+// set explicitly -- see README "Connecting a hosted frontend to a real backend".
+const BASE = import.meta.env.VITE_API_BASE || '/api';
 
 async function request(path, options) {
   const res = await fetch(`${BASE}${path}`, {

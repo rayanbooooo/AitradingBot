@@ -177,6 +177,50 @@ any static file server (nginx, Caddy, `serve`, etc.) alongside the backend.
    fully autonomous, per what you asked for — do this deliberately, not by
    default.
 
+### 4. Connecting a hosted frontend (e.g. the Vercel preview) to a real backend
+
+The Vercel deployment is a **static site with no backend behind it** — that's
+why it shows sample data. To make that same hosted link show real charts and
+real numbers, the backend needs to run somewhere that (a) stays up 24/7 and
+(b) is reachable over **HTTPS/WSS**, not plain HTTP/WS — a page served over
+`https://` (which Vercel always uses) is blocked by the browser from calling
+a plain `http://` API or opening a plain `ws://` socket ("mixed content").
+
+Two ways to get there:
+
+**A. Run everything locally first (fastest, no hosting needed).** This is
+the quickest way to see real charts and real numbers — no money at risk if
+you're on testnet:
+```bash
+cd backend && npm install && cp .env.example .env   # fill in Binance keys
+npm start
+# in a second terminal:
+cd frontend && npm install && npm run dev
+```
+Open the local Vite URL. It talks to `localhost:4000`/`:4001` automatically
+(`vite.config.js`'s dev proxy + same-hostname WS default) — nothing to
+configure. This uses real Binance market data and, once you add API keys,
+real testnet account numbers. The Vercel link stays on sample data; this
+local one is the "real" dashboard until you host the backend somewhere.
+
+**B. Host the backend somewhere persistent, then point Vercel at it.** Pick
+a host that gives you a `https://` URL out of the box (Railway, Render,
+Fly.io, or your own VPS behind Caddy/nginx with a free Let's Encrypt cert —
+plain "rent a VPS and run `npm start`" is not enough by itself, it also
+needs TLS in front of it). Once the backend has a public `https://` +
+matching `wss://` address:
+1. In the Vercel project's environment variables, set:
+   - `VITE_API_BASE` = `https://your-backend-host/api`
+   - `VITE_WS_URL` = `wss://your-backend-host` (or wherever the WS server is exposed)
+2. Redeploy the frontend (these are build-time Vite env vars, so a plain
+   restart isn't enough — needs a rebuild).
+3. The hosted dashboard will now show the same live data as a local run.
+
+I can't provision a VPS or a Railway/Render account for you — that needs an
+account and payment method only you control — but tell me which host you'd
+rather use and I'll write the exact deploy config (Dockerfile, Railway/Render
+service config, or an nginx+Caddy reverse proxy setup) for it.
+
 ---
 
 ## Risk management (enforced in `src/risk/riskManager.js` + `src/state.js`)

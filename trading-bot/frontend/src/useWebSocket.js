@@ -1,6 +1,13 @@
 import { useEffect, useRef } from 'react';
 
-const WS_URL = `ws://${window.location.hostname}:4001`;
+// Same-origin default assumes the backend's WS server is reachable on the
+// current host at :4001 (local dev, or a VPS serving both). A Vercel-hosted
+// frontend needs this set explicitly to the backend's wss:// URL -- a page
+// served over https cannot open a plain ws:// connection (mixed content).
+// See README "Connecting a hosted frontend to a real backend".
+const WS_URL =
+  import.meta.env.VITE_WS_URL ||
+  `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:4001`;
 
 /**
  * Subscribes to the backend's WebSocket push feed. Also fires browser
