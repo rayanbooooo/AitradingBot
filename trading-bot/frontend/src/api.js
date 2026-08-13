@@ -19,7 +19,6 @@ async function request(path, options) {
 export const api = {
   getState: () => request('/state'),
   getSymbols: () => request('/symbols'),
-  getCandles: (symbol, timeframe = '5m') => request(`/candles/${symbol}?timeframe=${timeframe}`),
   getPrice: (symbol) => request(`/price/${symbol}`),
   getSignals: (limit = 50) => request(`/signals?limit=${limit}`),
   getPendingSignals: () => request('/signals/pending'),

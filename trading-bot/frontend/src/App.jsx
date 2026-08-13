@@ -140,7 +140,6 @@ export default function App() {
             timeframe={selectedTimeframe}
             timeframes={TIMEFRAMES}
             onTimeframeChange={setSelectedTimeframe}
-            openTrades={openTrades}
           />
           <ApprovalQueue pending={pending} onResolved={refreshAll} demoMode={demoMode} />
           <MarketScanner signals={signals} selectedSymbol={selectedSymbol} onSelect={setSelectedSymbol} />

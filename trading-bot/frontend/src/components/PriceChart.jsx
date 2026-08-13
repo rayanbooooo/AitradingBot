@@ -1,78 +1,96 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType } from 'lightweight-charts';
-import { api } from '../api.js';
+import React, { useEffect, useId, useRef } from 'react';
 
-export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe, timeframes, onTimeframeChange, openTrades }) {
-  const containerRef = useRef(null);
-  const chartRef = useRef(null);
-  const seriesRef = useRef(null);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const chart = createChart(containerRef.current, {
-      layout: { background: { type: ColorType.Solid, color: '#0f1420' }, textColor: '#c7ccd6' },
-      grid: { vertLines: { color: '#1c2333' }, horzLines: { color: '#1c2333' } },
-      width: containerRef.current.clientWidth,
-      height: 420,
-      timeScale: { timeVisible: true, secondsVisible: false },
+// TradingView's free embeddable "Advanced Real-Time Chart" widget -- this is
+// the actual TradingView UI (pen tool, trendlines, fib retracement, shapes,
+// indicators, the whole sidebar), not a lookalike. Loaded from TradingView's
+// own CDN, no API key or approval needed (that's only required for their
+// separate, heavier "Charting Library" product).
+//
+// Tradeoff accepted knowingly: this renders TradingView's own market-data
+// feed for the symbol, not our backend's candles, so the bot's entry/stop-
+// loss/take-profit lines can no longer be drawn directly on it the way the
+// old lightweight-charts version did. Use the Active Trades panel for exact
+// executed levels; use this chart for analysis and drawing.
+const TV_SCRIPT_SRC = 'https://s3.tradingview.com/tv.js';
+let tvScriptPromise = null;
+function loadTradingViewScript() {
+  if (window.TradingView) return Promise.resolve();
+  if (!tvScriptPromise) {
+    tvScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = TV_SCRIPT_SRC;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = reject;
+      document.head.appendChild(script);
     });
-    const series = chart.addCandlestickSeries({
-      upColor: '#22c55e', downColor: '#ef4444', borderVisible: false,
-      wickUpColor: '#22c55e', wickDownColor: '#ef4444',
-    });
-    chartRef.current = chart;
-    seriesRef.current = series;
+  }
+  return tvScriptPromise;
+}
 
-    const resize = () => chart.applyOptions({ width: containerRef.current.clientWidth });
-    window.addEventListener('resize', resize);
-    return () => {
-      window.removeEventListener('resize', resize);
-      chart.remove();
-    };
-  }, []);
+const INTERVAL_MAP = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D' };
 
+export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe, timeframes, onTimeframeChange }) {
+  const containerId = `tv_chart_${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const widgetRef = useRef(null);
+  const readyRef = useRef(false);
+
+  // Create the widget once on mount.
   useEffect(() => {
     let cancelled = false;
-    async function load() {
-      try {
-        const candles = await api.getCandles(symbol, timeframe);
-        if (cancelled || !seriesRef.current) return;
-        seriesRef.current.setData(
-          candles.map((c) => ({
-            time: Math.floor(c.openTime / 1000),
-            open: c.open, high: c.high, low: c.low, close: c.close,
-          }))
-        );
-        setError(null);
-      } catch (e) {
-        setError(e.message);
-      }
-    }
-    load();
-    const interval = setInterval(load, 15000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [symbol, timeframe]);
+    loadTradingViewScript().then(() => {
+      if (cancelled || !window.TradingView) return;
+      widgetRef.current = new window.TradingView.widget({
+        autosize: true,
+        symbol: `BINANCE:${symbol}`,
+        interval: INTERVAL_MAP[timeframe] || '5',
+        timezone: 'Etc/UTC',
+        theme: 'dark',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: '#0a0e17',
+        enable_publishing: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: true,
+        withdateranges: true,
+        container_id: containerId,
+      });
+      widgetRef.current.onChartReady(() => {
+        readyRef.current = true;
+      });
+    });
+    return () => {
+      cancelled = true;
+      readyRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [containerId]);
 
-  // Overlay entry/SL/TP lines for any open positions on the selected symbol.
+  // Keep the widget in sync when our own symbol/timeframe dropdowns change.
+  // (One-way: if the user changes symbol from inside TradingView's own UI,
+  // our dropdowns won't know about it -- the embed doesn't expose that back.)
   useEffect(() => {
-    if (!seriesRef.current) return;
-    seriesRef.current.setMarkers([]);
-    const priceLines = [];
-    for (const t of openTrades.filter((t) => t.symbol === symbol)) {
-      priceLines.push(
-        seriesRef.current.createPriceLine({ price: t.entry_price, color: '#60a5fa', title: 'Entry', lineWidth: 1 }),
-        seriesRef.current.createPriceLine({ price: t.stop_loss, color: '#ef4444', title: 'Stop', lineWidth: 1 }),
-        seriesRef.current.createPriceLine({ price: t.take_profit, color: '#22c55e', title: 'Target', lineWidth: 1 })
-      );
+    if (!readyRef.current || !widgetRef.current) return;
+    try {
+      widgetRef.current.chart().setSymbol(`BINANCE:${symbol}`, () => {});
+    } catch {
+      // Chart not ready yet or was torn down -- next symbol change will retry.
     }
-    return () => priceLines.forEach((l) => seriesRef.current?.removePriceLine(l));
-  }, [symbol, openTrades]);
+  }, [symbol]);
+
+  useEffect(() => {
+    if (!readyRef.current || !widgetRef.current) return;
+    try {
+      widgetRef.current.chart().setResolution(INTERVAL_MAP[timeframe] || '5', () => {});
+    } catch {
+      // Same as above.
+    }
+  }, [timeframe]);
 
   return (
     <div className="panel chart-panel">
       <div className="panel-title chart-controls">
-        <span>{symbol} · {timeframe}</span>
+        <span>{symbol} · {timeframe} · TradingView</span>
         <div className="chart-selects">
           <select value={symbol} onChange={(e) => onSymbolChange(e.target.value)}>
             {(symbols.length ? symbols : [symbol]).map((s) => (
@@ -86,8 +104,7 @@ export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe,
           </select>
         </div>
       </div>
-      {error && <div className="error-text">Chart data unavailable: {error}</div>}
-      <div ref={containerRef} />
+      <div id={containerId} style={{ height: 560 }} />
     </div>
   );
 }
