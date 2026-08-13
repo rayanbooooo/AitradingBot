@@ -321,6 +321,9 @@ tbody tr:hover { background: rgba(0, 229, 255, 0.05); }
 .risk-form input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow); }
 .risk-result { margin-top: 14px; font-size: 13px; line-height: 1.9; padding: 10px; border-left: 2px solid var(--cyan); background: rgba(0, 229, 255, 0.04); }
 
+.direction-toggle { display: flex; align-items: center; gap: 8px; }
+.direction-toggle .live-price { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+
 /* ---------------------------------------------------------------- Settings */
 
 .settings-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(0, 229, 255, 0.1); }

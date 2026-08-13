@@ -5,6 +5,7 @@ const config = require('../config');
 const signalEngine = require('../signals/signalEngine');
 const executionEngine = require('../execution/executionEngine');
 const exchange = require('../exchange/binanceClient');
+const riskManager = require('../risk/riskManager');
 const { tradesToCsv } = require('../csv/exportCsv');
 const logger = require('../logger');
 
@@ -106,6 +107,55 @@ function createApiRouter() {
     }
   });
 
+  // Manual trade ticket: user-initiated (not scanner/webhook-generated), but
+  // still runs through the same risk gate as automated signals -- max
+  // concurrent positions, daily/weekly halts, cooldown, and kill switch all
+  // still apply. Only the RR/score signal-quality filters are skipped,
+  // since those are specific to the bot's own confidence scoring, not a
+  // human's deliberate entry.
+  router.post('/trades/manual', async (req, res) => {
+    const { symbol, direction, stopLoss, takeProfit, leverage, quantity } = req.body || {};
+    if (!symbol || !['LONG', 'SHORT'].includes(direction) || !stopLoss || !takeProfit) {
+      return res.status(400).json({ ok: false, error: 'symbol, direction (LONG|SHORT), stopLoss, takeProfit are required' });
+    }
+    const gate = riskManager.evaluateGate(state);
+    if (!gate.allowed) {
+      return res.status(400).json({ ok: false, error: gate.reason });
+    }
+
+    try {
+      const sym = symbol.toUpperCase();
+      const entry = await exchange.getPrice(sym);
+      const riskReward = Math.abs(Number(takeProfit) - entry) / Math.abs(entry - Number(stopLoss));
+
+      const record = {
+        created_at: new Date().toISOString(),
+        symbol: sym,
+        timeframe: 'manual',
+        direction,
+        score: 100,
+        entry_price: entry,
+        stop_loss: Number(stopLoss),
+        take_profit: Number(takeProfit),
+        risk_reward: Number(riskReward.toFixed(2)),
+        reasons: JSON.stringify(['Manually placed from dashboard']),
+        source: 'MANUAL',
+        status: 'APPROVED',
+      };
+      const info = statements.insertSignal.run(record);
+      const signalRow = statements.getSignal.get(info.lastInsertRowid);
+
+      const trade = await executionEngine.executeSignal(signalRow, {
+        leverageOverride: leverage ? Number(leverage) : undefined,
+        quantityOverride: quantity ? Number(quantity) : undefined,
+      });
+      if (!trade) return res.status(500).json({ ok: false, error: 'Execution failed -- check server logs' });
+      res.json({ ok: true, trade });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
   router.post('/emergency-stop', async (req, res) => {
     const reason = (req.body && req.body.reason) || 'Manual emergency stop from dashboard';
     logger.warn('Emergency stop requested via API:', reason);
@@ -136,7 +186,6 @@ function createApiRouter() {
   router.post('/risk-calculator', (req, res) => {
     const { entry, stopLoss } = req.body || {};
     if (!entry || !stopLoss) return res.status(400).json({ error: 'entry and stopLoss required' });
-    const riskManager = require('../risk/riskManager');
     const { quantity, riskAmountUsdt } = riskManager.computePositionSize(state.accountBalance, Number(entry), Number(stopLoss));
     res.json({
       accountBalance: state.accountBalance,

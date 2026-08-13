@@ -8,25 +8,35 @@ const logger = require('../logger');
 const { notify } = require('../notifications/notifier');
 
 class ExecutionEngine extends EventEmitter {
-  /** Executes a stored, already-risk-gated signal record within ~2s of approval. */
-  async executeSignal(signalRow) {
+  /**
+   * Executes a stored, already-risk-gated signal record within ~2s of
+   * approval. `options.leverageOverride` and `options.quantityOverride` let
+   * a manual trade ticket (api/routes.js POST /trades/manual) specify its
+   * own leverage and size instead of the bot's 2%-risk auto-sizing --
+   * used for manually-initiated trades, never for scanner/webhook signals.
+   */
+  async executeSignal(signalRow, options = {}) {
     const symbol = signalRow.symbol;
     const direction = signalRow.direction; // LONG | SHORT
     const entrySignalPrice = signalRow.entry_price;
     const stopLoss = signalRow.stop_loss;
     const takeProfit = signalRow.take_profit;
     const mode = state.liveTradingEnabled ? 'LIVE' : 'PAPER';
+    const leverage = options.leverageOverride || config.futures.leverage;
 
     try {
-      const balance = mode === 'LIVE'
-        ? await exchange.futuresGetBalanceUsdt().catch(() => state.accountBalance)
-        : state.accountBalance;
-
-      const { quantity: rawQty, riskAmountUsdt } = riskManager.computePositionSize(
-        balance,
-        entrySignalPrice,
-        stopLoss
-      );
+      let rawQty;
+      let riskAmountUsdt = null;
+      if (options.quantityOverride) {
+        rawQty = options.quantityOverride;
+      } else {
+        const balance = mode === 'LIVE'
+          ? await exchange.futuresGetBalanceUsdt().catch(() => state.accountBalance)
+          : state.accountBalance;
+        const sized = riskManager.computePositionSize(balance, entrySignalPrice, stopLoss);
+        rawQty = sized.quantity;
+        riskAmountUsdt = sized.riskAmountUsdt;
+      }
       if (rawQty <= 0) throw new Error('Computed position size is zero/invalid');
 
       const filters = await exchange.futuresGetSymbolFilters(symbol);
@@ -41,7 +51,7 @@ class ExecutionEngine extends EventEmitter {
       let brokerOrderId = null;
 
       if (mode === 'LIVE') {
-        await exchange.futuresSetLeverage(symbol, config.futures.leverage);
+        await exchange.futuresSetLeverage(symbol, leverage);
         const openSide = direction === 'LONG' ? 'BUY' : 'SELL';
         const closeSide = direction === 'LONG' ? 'SELL' : 'BUY';
 
@@ -81,7 +91,7 @@ class ExecutionEngine extends EventEmitter {
       statements.updateSignalStatus.run('EXECUTED', signalRow.id);
       state.openPositionsCount += 1;
 
-      logger.trade(`OPENED ${mode} ${direction} ${symbol} qty=${quantity} entry=${executionPrice} SL=${stopLoss} TP=${takeProfit} riskUsdt=${riskAmountUsdt.toFixed(2)}`);
+      logger.trade(`OPENED ${mode} ${direction} ${symbol} qty=${quantity} entry=${executionPrice} SL=${stopLoss} TP=${takeProfit} leverage=${leverage}x riskUsdt=${riskAmountUsdt != null ? riskAmountUsdt.toFixed(2) : 'n/a (manual size)'}`);
       notify(`✅ Trade opened: ${symbol}`, `${direction} ${quantity} @ ${executionPrice.toFixed(4)} (${mode})`);
 
       const openedTrade = { id: tradeInfo.lastInsertRowid, ...signalRow, entry_price: executionPrice, quantity, mode, status: 'OPEN' };

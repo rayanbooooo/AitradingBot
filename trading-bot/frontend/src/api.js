@@ -28,6 +28,7 @@ export const api = {
   getOpenTrades: () => request('/trades/open'),
   getTradeHistory: (limit = 20) => request(`/trades/history?limit=${limit}`),
   closeTrade: (id) => request(`/trades/${id}/close`, { method: 'POST' }),
+  placeManualTrade: (order) => request('/trades/manual', { method: 'POST', body: JSON.stringify(order) }),
   emergencyStop: (reason) => request('/emergency-stop', { method: 'POST', body: JSON.stringify({ reason }) }),
   clearEmergencyStop: () => request('/emergency-stop/clear', { method: 'POST' }),
   setManualApproval: (enabled) => request('/settings/manual-approval', { method: 'POST', body: JSON.stringify({ enabled }) }),

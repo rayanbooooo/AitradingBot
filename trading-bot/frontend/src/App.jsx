@@ -10,6 +10,7 @@ import TradeHistory from './components/TradeHistory.jsx';
 import AccountMetrics from './components/AccountMetrics.jsx';
 import HeatMap from './components/HeatMap.jsx';
 import RiskCalculator from './components/RiskCalculator.jsx';
+import ManualTradePanel from './components/ManualTradePanel.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import AlertFeed from './components/AlertFeed.jsx';
 import { demoAppState, demoSignals, demoPending, demoOpenTrades, demoHistory, demoMetrics, demoSymbols } from './demoData.js';
@@ -148,6 +149,7 @@ export default function App() {
         </div>
         <div className="layout-side">
           <AccountMetrics metrics={metrics} />
+          <ManualTradePanel symbols={symbols} demoMode={demoMode} />
           <HeatMap trades={history} />
           <RiskCalculator demoMode={demoMode} />
           <SettingsPanel appState={appState} onChanged={() => api.getState().then(setAppState)} demoMode={demoMode} />

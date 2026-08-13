@@ -7,6 +7,7 @@ const { SYMBOLS } = require('./market/symbols');
 const signalEngine = require('./signals/signalEngine');
 const executionEngine = require('./execution/executionEngine');
 const positionMonitor = require('./execution/positionMonitor');
+const balancePoller = require('./execution/balancePoller');
 const wsServer = require('./websocket/wsServer');
 const { createApiRouter } = require('./api/routes');
 const { createTradingViewWebhookRouter } = require('./webhook/tradingviewWebhook');
@@ -103,6 +104,7 @@ async function main() {
 
   wsServer.start();
   positionMonitor.start();
+  balancePoller.start();
   scheduleDailyWeeklyResets();
   wireConnectionSafety();
 
