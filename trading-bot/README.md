@@ -129,14 +129,17 @@ cp .env.example .env
 ```
 
 Edit `.env`:
-- Get a Binance API key at Account → API Management. Enable **Futures**
-  trading on the key (required for SHORT support). Do **not** enable
-  withdrawals.
-- For the futures testnet, register separately at
-  https://testnet.binancefuture.com and use those keys while
-  `USE_TESTNET=true`.
+- Testnet keys (recommended to start): log into your regular Binance.com
+  account, switch to **Demo Trading** (top nav, next to Spot/Futures), then
+  create an API key from API Management while in that mode. Binance retired
+  the old separate testnet.binancefuture.com sandbox (GitHub-login based) --
+  Demo Trading through your real account is what replaced it, and it's what
+  this bot's `USE_TESTNET=true` now points at.
+- Real keys (only once you're ready to risk real money): Account → API
+  Management on your normal account. Either way, enable **Futures** trading
+  on the key (required for SHORT support) and do **not** enable withdrawals.
 - Leave `LIVE_TRADING_ENABLED=false` until you've watched the bot run on
-  testnet.
+  Demo Trading.
 
 ```bash
 npm start
