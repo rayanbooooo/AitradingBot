@@ -118,6 +118,11 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="hud-bg" aria-hidden="true">
+        <div className="hud-glow-a" />
+        <div className="hud-glow-b" />
+        <div className="hud-scanline" />
+      </div>
       <Header appState={appState} connected={connected} demoMode={demoMode} onEmergencyStop={handleEmergencyStop} onClearStop={handleClearStop} />
       <div className="layout">
         <div className="layout-main">

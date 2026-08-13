@@ -14,6 +14,11 @@ export default function Header({ appState, connected, demoMode, onEmergencyStop,
       )}
       <header className="header">
         <div className="header-left">
+          <div className="reactor" aria-hidden="true">
+            <div className="reactor__ring" />
+            <div className="reactor__ring-inner" />
+            <div className="reactor__core" />
+          </div>
           <h1>AI Trading Bot</h1>
           <span className={`badge ${modeClass}`}>{mode}</span>
           <span className={`badge ${connected ? 'badge-ok' : 'badge-bad'}`}>

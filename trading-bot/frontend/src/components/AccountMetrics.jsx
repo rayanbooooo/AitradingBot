@@ -8,14 +8,21 @@ export default function AccountMetrics({ metrics }) {
   return (
     <div className="panel">
       <div className="panel-title">Account Performance</div>
+      <div className="gauge-row">
+        <Gauge label="Win Rate" percent={metrics.winRatePercent} display={`${metrics.winRatePercent}%`} />
+        <Gauge
+          label="ROI"
+          percent={Math.min(100, Math.max(0, 50 + metrics.roiPercent * 2.5))}
+          display={`${metrics.roiPercent >= 0 ? '+' : ''}${metrics.roiPercent}%`}
+          negative={metrics.roiPercent < 0}
+        />
+      </div>
       <div className="metrics-grid">
         <Metric label="Total Trades" value={metrics.totalTrades} />
-        <Metric label="Win Rate" value={`${metrics.winRatePercent}%`} />
+        <Metric label="Win/Loss Ratio" value={metrics.winLossRatio ?? '--'} />
         <Metric label="Avg Win" value={`$${metrics.avgWinUsdt}`} good />
         <Metric label="Avg Loss" value={`$${metrics.avgLossUsdt}`} bad />
-        <Metric label="Win/Loss Ratio" value={metrics.winLossRatio ?? '--'} />
         <Metric label="Total P&L" value={`$${metrics.totalPnlUsdt}`} good={metrics.totalPnlUsdt >= 0} bad={metrics.totalPnlUsdt < 0} />
-        <Metric label="ROI" value={`${metrics.roiPercent}%`} good={metrics.roiPercent >= 0} bad={metrics.roiPercent < 0} />
       </div>
       {monthly.length > 0 && (
         <div className="chart-mini">
@@ -29,6 +36,28 @@ export default function AccountMetrics({ metrics }) {
           </ResponsiveContainer>
         </div>
       )}
+    </div>
+  );
+}
+
+function Gauge({ label, percent, display, negative }) {
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.min(100, Math.max(0, percent));
+  const offset = circumference * (1 - clamped / 100);
+  return (
+    <div className="gauge">
+      <svg width="84" height="84" viewBox="0 0 84 84">
+        <circle className="gauge__ring-bg" cx="42" cy="42" r={radius} />
+        <circle
+          className={`gauge__ring ${negative ? 'negative-ring' : ''}`}
+          cx="42" cy="42" r={radius}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+        <text x="42" y="47" textAnchor="middle" className="gauge__value">{display}</text>
+      </svg>
+      <div className="gauge__label">{label}</div>
     </div>
   );
 }
