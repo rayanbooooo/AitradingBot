@@ -12,6 +12,7 @@ import HeatMap from './components/HeatMap.jsx';
 import RiskCalculator from './components/RiskCalculator.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import AlertFeed from './components/AlertFeed.jsx';
+import { demoAppState, demoSignals, demoPending, demoOpenTrades, demoHistory, demoMetrics } from './demoData.js';
 
 export default function App() {
   const [appState, setAppState] = useState(null);
@@ -24,6 +25,7 @@ export default function App() {
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
   const [livePrices, setLivePrices] = useState({});
   const [alerts, setAlerts] = useState([]);
+  const [demoMode, setDemoMode] = useState(false);
 
   const refreshAll = useCallback(async () => {
     const [s, p, o, h, m] = await Promise.all([
@@ -33,13 +35,25 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    api.getState().then(setAppState).catch(() => {});
-    refreshAll();
-    const poll = setInterval(refreshAll, 30000);
+    // No reachable backend (e.g. this is a static preview with no live
+    // Node process behind it) -> fall back to sample data so the UI still
+    // renders something meaningful instead of a permanent "Connecting..." spinner.
+    api.getState().then(setAppState).catch(() => {
+      setDemoMode(true);
+      setAppState(demoAppState);
+      setSignals(demoSignals);
+      setPending(demoPending);
+      setOpenTrades(demoOpenTrades);
+      setHistory(demoHistory);
+      setMetrics(demoMetrics);
+    });
+    refreshAll().catch(() => {});
+    const poll = setInterval(() => refreshAll().catch(() => {}), 30000);
     return () => clearInterval(poll);
   }, [refreshAll]);
 
   useEffect(() => {
+    if (demoMode) return;
     let cancelled = false;
     async function pollPrices() {
       const symbols = [...new Set(openTrades.map((t) => t.symbol))];
@@ -51,7 +65,7 @@ export default function App() {
     pollPrices();
     const interval = setInterval(pollPrices, 5000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [openTrades]);
+  }, [openTrades, demoMode]);
 
   const pushAlert = useCallback((level, text) => {
     setAlerts((prev) => [{ level, text, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 50));
@@ -90,11 +104,13 @@ export default function App() {
   }, [pushAlert, refreshAll]));
 
   async function handleEmergencyStop() {
+    if (demoMode) return window.alert('This is a static preview with sample data -- no live backend to send commands to. Run the backend locally to use this for real.');
     if (!window.confirm('This will immediately close ALL open positions at market price. Continue?')) return;
     await api.emergencyStop('Manual emergency stop from dashboard');
     refreshAll();
   }
   async function handleClearStop() {
+    if (demoMode) return;
     await api.clearEmergencyStop();
   }
 
@@ -102,20 +118,20 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header appState={appState} connected={connected} onEmergencyStop={handleEmergencyStop} onClearStop={handleClearStop} />
+      <Header appState={appState} connected={connected} demoMode={demoMode} onEmergencyStop={handleEmergencyStop} onClearStop={handleClearStop} />
       <div className="layout">
         <div className="layout-main">
           <PriceChart symbol={selectedSymbol} openTrades={openTrades} />
-          <ApprovalQueue pending={pending} onResolved={refreshAll} />
+          <ApprovalQueue pending={pending} onResolved={refreshAll} demoMode={demoMode} />
           <MarketScanner signals={signals} selectedSymbol={selectedSymbol} onSelect={setSelectedSymbol} />
-          <ActiveTrades trades={openTrades} livePrices={livePrices} onClosed={refreshAll} />
+          <ActiveTrades trades={openTrades} livePrices={livePrices} onClosed={refreshAll} demoMode={demoMode} />
           <TradeHistory trades={history} />
         </div>
         <div className="layout-side">
           <AccountMetrics metrics={metrics} />
           <HeatMap trades={history} />
-          <RiskCalculator />
-          <SettingsPanel appState={appState} onChanged={() => api.getState().then(setAppState)} />
+          <RiskCalculator demoMode={demoMode} />
+          <SettingsPanel appState={appState} onChanged={() => api.getState().then(setAppState)} demoMode={demoMode} />
           <AlertFeed alerts={alerts} />
         </div>
       </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { api } from '../api.js';
 
-export default function SettingsPanel({ appState, onChanged }) {
+export default function SettingsPanel({ appState, onChanged, demoMode }) {
   async function toggleApproval() {
+    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     await api.setManualApproval(!appState.manualApprovalRequired);
     onChanged();
   }

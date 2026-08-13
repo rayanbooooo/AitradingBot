@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
-export default function ActiveTrades({ trades, livePrices, onClosed }) {
+export default function ActiveTrades({ trades, livePrices, onClosed, demoMode }) {
   async function close(id) {
+    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     if (!window.confirm('Close this position now at market price?')) return;
     await api.closeTrade(id);
     onClosed();
