@@ -99,6 +99,15 @@ class AppState extends EventEmitter {
     return true;
   }
 
+  /** Called once at boot in LIVE mode to replace the config default with the real fetched balance. */
+  initializeLiveBalance(realBalance) {
+    this.accountBalance = realBalance;
+    this.startOfDayBalance = realBalance;
+    this.startOfWeekBalance = realBalance;
+    logger.info(`Synced starting balance from Binance: ${realBalance.toFixed(2)} USDT`);
+    this.emit('change');
+  }
+
   updateBalance(newBalance) {
     this.accountBalance = newBalance;
     this.dailyHalted =

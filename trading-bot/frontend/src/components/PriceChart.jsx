@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, ColorType } from 'lightweight-charts';
 import { api } from '../api.js';
 
-export default function PriceChart({ symbol, openTrades }) {
+export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe, timeframes, onTimeframeChange, openTrades }) {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -36,7 +36,7 @@ export default function PriceChart({ symbol, openTrades }) {
     let cancelled = false;
     async function load() {
       try {
-        const candles = await api.getCandles(symbol, '5m');
+        const candles = await api.getCandles(symbol, timeframe);
         if (cancelled || !seriesRef.current) return;
         seriesRef.current.setData(
           candles.map((c) => ({
@@ -52,7 +52,7 @@ export default function PriceChart({ symbol, openTrades }) {
     load();
     const interval = setInterval(load, 15000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [symbol]);
+  }, [symbol, timeframe]);
 
   // Overlay entry/SL/TP lines for any open positions on the selected symbol.
   useEffect(() => {
@@ -71,7 +71,21 @@ export default function PriceChart({ symbol, openTrades }) {
 
   return (
     <div className="panel chart-panel">
-      <div className="panel-title">{symbol} · 5m</div>
+      <div className="panel-title chart-controls">
+        <span>{symbol} · {timeframe}</span>
+        <div className="chart-selects">
+          <select value={symbol} onChange={(e) => onSymbolChange(e.target.value)}>
+            {(symbols.length ? symbols : [symbol]).map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <select value={timeframe} onChange={(e) => onTimeframeChange(e.target.value)}>
+            {timeframes.map((tf) => (
+              <option key={tf} value={tf}>{tf}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       {error && <div className="error-text">Chart data unavailable: {error}</div>}
       <div ref={containerRef} />
     </div>

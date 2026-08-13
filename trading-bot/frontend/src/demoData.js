@@ -2,6 +2,12 @@
 // (e.g. this static preview deployment, which has no persistent Node
 // process behind it). Structurally identical to what /api/* returns.
 
+export const demoSymbols = [
+  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
+  'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'DOTUSDT', 'MATICUSDT',
+  'LINKUSDT', 'LTCUSDT', 'TRXUSDT', 'ATOMUSDT', 'UNIUSDT',
+];
+
 export const demoAppState = {
   liveTradingEnabled: false,
   manualApprovalRequired: true,

@@ -10,7 +10,7 @@ const positionMonitor = require('./execution/positionMonitor');
 const wsServer = require('./websocket/wsServer');
 const { createApiRouter } = require('./api/routes');
 const { createTradingViewWebhookRouter } = require('./webhook/tradingviewWebhook');
-const { binance } = require('./exchange/binanceClient');
+const { binance, futuresGetBalanceUsdt } = require('./exchange/binanceClient');
 
 const SCAN_START_DELAY_MS = 5 * 60 * 1000; // "Start scanning 5 minutes after launch"
 
@@ -75,8 +75,21 @@ function wireConnectionSafety() {
   });
 }
 
+async function syncLiveBalance() {
+  if (!config.liveTradingEnabled) return;
+  try {
+    const realBalance = await futuresGetBalanceUsdt();
+    state.initializeLiveBalance(realBalance);
+  } catch (e) {
+    logger.error(
+      `Could not fetch real Futures balance at boot (falling back to STARTING_ACCOUNT_BALANCE_USDT=${config.account.startingBalanceUsdt}): ${e.message || e}`
+    );
+  }
+}
+
 async function main() {
   assertSafeToBoot();
+  await syncLiveBalance();
 
   const app = express();
   app.use(cors());

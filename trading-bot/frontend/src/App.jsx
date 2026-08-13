@@ -12,7 +12,9 @@ import HeatMap from './components/HeatMap.jsx';
 import RiskCalculator from './components/RiskCalculator.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import AlertFeed from './components/AlertFeed.jsx';
-import { demoAppState, demoSignals, demoPending, demoOpenTrades, demoHistory, demoMetrics } from './demoData.js';
+import { demoAppState, demoSignals, demoPending, demoOpenTrades, demoHistory, demoMetrics, demoSymbols } from './demoData.js';
+
+const TIMEFRAMES = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
 export default function App() {
   const [appState, setAppState] = useState(null);
@@ -22,7 +24,9 @@ export default function App() {
   const [openTrades, setOpenTrades] = useState([]);
   const [history, setHistory] = useState([]);
   const [metrics, setMetrics] = useState(null);
+  const [symbols, setSymbols] = useState([]);
   const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('5m');
   const [livePrices, setLivePrices] = useState({});
   const [alerts, setAlerts] = useState([]);
   const [demoMode, setDemoMode] = useState(false);
@@ -46,7 +50,9 @@ export default function App() {
       setOpenTrades(demoOpenTrades);
       setHistory(demoHistory);
       setMetrics(demoMetrics);
+      setSymbols(demoSymbols);
     });
+    api.getSymbols().then(setSymbols).catch(() => {});
     refreshAll().catch(() => {});
     const poll = setInterval(() => refreshAll().catch(() => {}), 30000);
     return () => clearInterval(poll);
@@ -126,7 +132,15 @@ export default function App() {
       <Header appState={appState} connected={connected} demoMode={demoMode} onEmergencyStop={handleEmergencyStop} onClearStop={handleClearStop} />
       <div className="layout">
         <div className="layout-main">
-          <PriceChart symbol={selectedSymbol} openTrades={openTrades} />
+          <PriceChart
+            symbol={selectedSymbol}
+            symbols={symbols}
+            onSymbolChange={setSelectedSymbol}
+            timeframe={selectedTimeframe}
+            timeframes={TIMEFRAMES}
+            onTimeframeChange={setSelectedTimeframe}
+            openTrades={openTrades}
+          />
           <ApprovalQueue pending={pending} onResolved={refreshAll} demoMode={demoMode} />
           <MarketScanner signals={signals} selectedSymbol={selectedSymbol} onSelect={setSelectedSymbol} />
           <ActiveTrades trades={openTrades} livePrices={livePrices} onClosed={refreshAll} demoMode={demoMode} />
