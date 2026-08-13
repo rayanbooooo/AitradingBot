@@ -1,12 +1,14 @@
 const path = require('path');
 const fs = require('fs');
-const Database = require('better-sqlite3');
+// Node's built-in SQLite (stable, no native compile step -- unlike
+// better-sqlite3, which requires a working C++ toolchain on install).
+const { DatabaseSync } = require('node:sqlite');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(path.join(DATA_DIR, 'trading.db'));
-db.pragma('journal_mode = WAL');
+const db = new DatabaseSync(path.join(DATA_DIR, 'trading.db'));
+db.exec('PRAGMA journal_mode = WAL');
 
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 db.exec(schema);

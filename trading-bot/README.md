@@ -266,6 +266,10 @@ ATR-based; take-profit targets 2.5–3:1 depending on score.
 ## Data & logging
 
 - SQLite at `backend/data/trading.db` — `signals`, `trades`, `event_log` tables.
+  Uses Node's built-in `node:sqlite` module (requires Node ≥22.13), not a
+  separate npm package -- deliberately, so `npm install` never needs a working
+  C++ compiler on the machine it runs on. It's still an experimental Node API,
+  but it's part of Node core, not a third-party dependency.
 - `backend/logs/app.log` / `error.log` — plain-text logs.
 - `GET /api/export/csv` — downloads closed trade history as CSV.
 - `GET /api/metrics` — win rate, avg win/loss, win/loss ratio, total P&L, ROI,
