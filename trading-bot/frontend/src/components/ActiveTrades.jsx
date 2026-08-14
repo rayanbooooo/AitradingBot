@@ -11,7 +11,7 @@ export default function ActiveTrades({ trades, livePrices, onClosed, demoMode })
 
   return (
     <div className="panel">
-      <div className="panel-title">Active Trades ({trades.length}/3)</div>
+      <div className="panel-title">Active Trades ({trades.length})</div>
       <div className="table-wrap">
         <table>
           <thead>
@@ -29,8 +29,8 @@ export default function ActiveTrades({ trades, livePrices, onClosed, demoMode })
                   <td>{t.symbol}</td>
                   <td><span className={`pill ${t.direction === 'LONG' ? 'pill-green' : 'pill-red'}`}>{t.direction}</span></td>
                   <td>{t.entry_price}</td>
-                  <td>{t.stop_loss}</td>
-                  <td>{t.take_profit}</td>
+                  <td>{t.stop_loss ?? '--'}</td>
+                  <td>{t.take_profit ?? '--'}</td>
                   <td>{t.quantity}</td>
                   <td>{t.mode}</td>
                   <td className={pnl == null ? '' : pnl >= 0 ? 'positive' : 'negative'}>

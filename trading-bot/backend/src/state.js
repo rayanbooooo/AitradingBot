@@ -119,6 +119,20 @@ class AppState extends EventEmitter {
     this.emit('change');
   }
 
+  /** Resets balance, P&L baselines, and loss-streak/cooldown back to the configured starting point. */
+  resetToStartingBalance() {
+    const startingBalance = config.account.startingBalanceUsdt;
+    this.accountBalance = startingBalance;
+    this.startOfDayBalance = startingBalance;
+    this.startOfWeekBalance = startingBalance;
+    this.consecutiveLosses = 0;
+    this.cooldownUntil = null;
+    this.dailyHalted = false;
+    this.weeklyHalted = false;
+    logger.info(`Balance and tracking reset to configured starting balance: ${startingBalance} USDT`);
+    this.emit('change');
+  }
+
   resetDaily() {
     this.startOfDayBalance = this.accountBalance;
     this.dailyHalted = false;

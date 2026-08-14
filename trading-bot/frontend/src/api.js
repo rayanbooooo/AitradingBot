@@ -30,6 +30,7 @@ export const api = {
   placeManualTrade: (order) => request('/trades/manual', { method: 'POST', body: JSON.stringify(order) }),
   emergencyStop: (reason) => request('/emergency-stop', { method: 'POST', body: JSON.stringify({ reason }) }),
   clearEmergencyStop: () => request('/emergency-stop/clear', { method: 'POST' }),
+  resetBalance: () => request('/reset-balance', { method: 'POST' }),
   setManualApproval: (enabled) => request('/settings/manual-approval', { method: 'POST', body: JSON.stringify({ enabled }) }),
   getMetrics: () => request('/metrics'),
   riskCalculator: (entry, stopLoss) => request('/risk-calculator', { method: 'POST', body: JSON.stringify({ entry, stopLoss }) }),

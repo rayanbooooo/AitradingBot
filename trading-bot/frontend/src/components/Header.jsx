@@ -41,7 +41,7 @@ export default function Header({ appState, connected, demoMode, onEmergencyStop,
           </div>
           <div className="stat">
             <span className="stat-label">Open Positions</span>
-            <span className="stat-value">{appState?.openPositionsCount ?? 0}/3</span>
+            <span className="stat-value">{appState?.openPositionsCount ?? 0}</span>
           </div>
           {appState?.killSwitchActive ? (
             <button className="btn btn-secondary" onClick={onClearStop}>Clear Kill Switch</button>

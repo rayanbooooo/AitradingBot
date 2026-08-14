@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS signals (
   direction TEXT NOT NULL,              -- LONG | SHORT
   score INTEGER NOT NULL,
   entry_price REAL NOT NULL,
-  stop_loss REAL NOT NULL,
-  take_profit REAL NOT NULL,
-  risk_reward REAL NOT NULL,
+  stop_loss REAL,                       -- nullable: manual trades may skip a stop
+  take_profit REAL,                     -- nullable: manual trades may skip a target
+  risk_reward REAL,                     -- nullable when stop_loss/take_profit are unset
   reasons TEXT NOT NULL,                -- JSON array of why it triggered
   source TEXT NOT NULL,                 -- SCANNER | TRADINGVIEW_WEBHOOK
   status TEXT NOT NULL DEFAULT 'PENDING' -- PENDING | APPROVED | REJECTED | EXECUTED | EXPIRED
@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS trades (
   entry_price REAL NOT NULL,
   slippage REAL,
   quantity REAL NOT NULL,
-  stop_loss REAL NOT NULL,
-  take_profit REAL NOT NULL,
+  stop_loss REAL,                       -- nullable: manual trades may skip a stop
+  take_profit REAL,                     -- nullable: manual trades may skip a target
   exit_price REAL,
   pnl_usdt REAL,
   pnl_percent REAL,

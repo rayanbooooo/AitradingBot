@@ -19,9 +19,6 @@ function evaluateGate(state) {
   if (state.isInCooldown()) {
     return { allowed: false, reason: `Cooldown active after ${config.risk.consecutiveLossCooldownCount} consecutive losses until ${state.cooldownUntil}` };
   }
-  if (state.openPositionsCount >= config.risk.maxConcurrentPositions) {
-    return { allowed: false, reason: `Max concurrent positions reached (${config.risk.maxConcurrentPositions})` };
-  }
   return { allowed: true, reason: null };
 }
 

@@ -28,20 +28,24 @@ export default function ManualTradePanel({ symbols, demoMode }) {
     return () => { cancelled = true; };
   }, [price, stopLoss, sizeMode, demoMode]);
 
+  // Auto-sizing has nothing to size against without a stop distance --
+  // a manual quantity is the only way to size a stop-less trade.
+  const needsManualQty = sizeMode === 'auto' && !stopLoss;
+
   async function submit(e) {
     e.preventDefault();
     setResult(null);
     if (demoMode) return setResult({ ok: false, error: 'Static preview -- no live backend to send this to.' });
-    if (!window.confirm(`Place a real ${direction} order on ${symbol}? This executes immediately.`)) return;
+    if (needsManualQty) {
+      return setResult({ ok: false, error: 'No stop-loss set -- switch sizing to manual and enter a quantity, or add a stop-loss.' });
+    }
     setSubmitting(true);
     try {
-      const order = {
-        symbol, direction,
-        stopLoss: Number(stopLoss),
-        takeProfit: Number(takeProfit),
-        leverage: Number(leverage) || 1,
-      };
+      const order = { symbol, direction, leverage: Number(leverage) || 1 };
+      if (stopLoss) order.stopLoss = Number(stopLoss);
+      if (takeProfit) order.takeProfit = Number(takeProfit);
       if (sizeMode === 'manual') order.quantity = Number(quantity);
+      // Fires immediately -- no confirmation step, per how this panel is meant to be used.
       const r = await api.placeManualTrade(order);
       setResult(r);
     } catch (err) {
@@ -68,8 +72,8 @@ export default function ManualTradePanel({ symbols, demoMode }) {
           <span className="live-price">{price != null ? `Last: ${price}` : '--'}</span>
         </div>
 
-        <label>Stop-loss price<input value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} placeholder="required" required /></label>
-        <label>Take-profit price<input value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} placeholder="required" required /></label>
+        <label>Stop-loss price (optional)<input value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} placeholder="none" /></label>
+        <label>Take-profit price (optional)<input value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} placeholder="none" /></label>
         <label>Leverage<input value={leverage} onChange={(e) => setLeverage(e.target.value)} placeholder="1" /></label>
 
         <div className="settings-row" style={{ padding: '4px 0' }}>
@@ -82,9 +86,15 @@ export default function ManualTradePanel({ symbols, demoMode }) {
         </div>
 
         {sizeMode === 'manual' ? (
-          <label>Quantity<input value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 0.01" required /></label>
-        ) : preview && (
+          <label>Quantity<input value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 0.01" /></label>
+        ) : preview ? (
           <div className="settings-hint">Estimated size: ~{preview.quantity} units (${preview.riskAmountUsdt} at risk, {preview.riskPercent}%)</div>
+        ) : needsManualQty && (
+          <div className="settings-hint">No stop-loss set -- switch Sizing to manual and enter a quantity.</div>
+        )}
+
+        {!stopLoss && !takeProfit && (
+          <div className="settings-hint">No stop-loss or take-profit -- this position's only automatic exit is the 24h time-decay close.</div>
         )}
 
         <button className="btn btn-danger" type="submit" disabled={submitting}>

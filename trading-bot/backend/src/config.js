@@ -36,7 +36,6 @@ const config = {
 
   risk: {
     riskPerTradePercent: num(process.env.RISK_PER_TRADE_PERCENT, 2),
-    maxConcurrentPositions: num(process.env.MAX_CONCURRENT_POSITIONS, 3),
     dailyLossLimitPercent: num(process.env.DAILY_LOSS_LIMIT_PERCENT, 5),
     weeklyLossLimitPercent: num(process.env.WEEKLY_LOSS_LIMIT_PERCENT, 10),
     consecutiveLossCooldownCount: num(process.env.CONSECUTIVE_LOSS_COOLDOWN_COUNT, 3),

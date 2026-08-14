@@ -30,6 +30,9 @@ class ExecutionEngine extends EventEmitter {
       if (options.quantityOverride) {
         rawQty = options.quantityOverride;
       } else {
+        if (stopLoss == null) {
+          throw new Error('Cannot auto-size a position without a stop-loss -- provide a stop-loss or a manual quantity');
+        }
         const balance = mode === 'LIVE'
           ? await exchange.futuresGetBalanceUsdt().catch(() => state.accountBalance)
           : state.accountBalance;
@@ -61,8 +64,15 @@ class ExecutionEngine extends EventEmitter {
 
         // Place protective stop-loss and take-profit as reduceOnly orders so
         // they can only ever flatten this position, never open a new one.
-        await exchange.futuresReduceOnlyStopOrder(symbol, closeSide, quantity, stopLoss, 'STOP_MARKET');
-        await exchange.futuresReduceOnlyStopOrder(symbol, closeSide, quantity, takeProfit, 'TAKE_PROFIT_MARKET');
+        // Either can be omitted (manual trade with no stop/target) -- the
+        // 24h time-decay close in positionMonitor.js is then the only
+        // guaranteed exit for that position until it's closed by hand.
+        if (stopLoss != null) {
+          await exchange.futuresReduceOnlyStopOrder(symbol, closeSide, quantity, stopLoss, 'STOP_MARKET');
+        }
+        if (takeProfit != null) {
+          await exchange.futuresReduceOnlyStopOrder(symbol, closeSide, quantity, takeProfit, 'TAKE_PROFIT_MARKET');
+        }
       } else {
         // Paper mode: simulate a small amount of realistic slippage so the
         // slippage-tracking column/UI isn't always exactly zero.

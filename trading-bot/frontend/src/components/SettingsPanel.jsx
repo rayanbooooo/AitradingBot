@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { api } from '../api.js';
 
 export default function SettingsPanel({ appState, onChanged, demoMode }) {
+  const [resetting, setResetting] = useState(false);
+
   async function toggleApproval() {
     if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     await api.setManualApproval(!appState.manualApprovalRequired);
     onChanged();
+  }
+
+  async function resetBalance() {
+    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
+    if (!window.confirm('Reset tracked balance, daily/weekly baselines, and loss-streak cooldown back to the configured starting balance?')) return;
+    setResetting(true);
+    try {
+      await api.resetBalance();
+      onChanged();
+    } finally {
+      setResetting(false);
+    }
   }
 
   return (
@@ -41,10 +55,23 @@ export default function SettingsPanel({ appState, onChanged, demoMode }) {
         <div>
           <div className="settings-label">Risk limits (read-only here)</div>
           <div className="settings-hint">
-            2% risk/trade · max 3 concurrent positions · -5% daily / -10% weekly halt ·
+            2% risk/trade · -5% daily / -10% weekly halt ·
             1h cooldown after 3 consecutive losses. Change these in the backend .env.
           </div>
         </div>
+      </div>
+
+      <div className="settings-row">
+        <div>
+          <div className="settings-label">Reset balance</div>
+          <div className="settings-hint">
+            Resets tracked balance and P&amp;L baselines to the configured starting amount.
+            {appState.liveTradingEnabled && ' In LIVE mode, the raw balance figure re-syncs to your real Binance balance again within ~30s -- only the daily/weekly baselines and cooldown reset durably.'}
+          </div>
+        </div>
+        <button className="btn btn-small btn-secondary" onClick={resetBalance} disabled={resetting}>
+          {resetting ? 'Resetting...' : 'Reset'}
+        </button>
       </div>
     </div>
   );

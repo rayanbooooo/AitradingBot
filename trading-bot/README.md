@@ -84,9 +84,15 @@ So this system does not "connect to TradingView" for its core loop. Instead:
   `.env` and restart the backend to arm live trading — that's not this
   assistant second-guessing you, it's literally the "require restart to
   enable live trading (not just toggle)" requirement from your own original
-  spec, which this build treats as non-negotiable alongside the rest of
-  your mandatory risk-management list (2% risk/trade, max 3 positions,
-  daily/weekly drawdown halts, 3-loss cooldown, emergency stop).
+  spec, which this build still treats as non-negotiable. Some other items
+  from that original mandatory list were later relaxed at your explicit,
+  later request: the max-3-concurrent-positions cap was removed entirely,
+  and the Manual Trade panel no longer requires a stop-loss/take-profit
+  (auto risk-sizing still needs a stop to size against, so it falls back to
+  requiring a manual quantity when one isn't set). What's still enforced
+  everywhere, including the Manual Trade panel: 2% risk/trade sizing (when
+  auto-sizing), daily/weekly drawdown halts, the 3-loss cooldown, and the
+  emergency stop.
 - **Binance Spot cannot open SHORT positions** (you can't sell an asset you
   don't hold without margin). To honor "auto-execute LONG and SHORT" as
   written, execution uses **Binance USDⓈ-M Futures** instead of Spot. Futures
@@ -230,20 +236,42 @@ service config, or an nginx+Caddy reverse proxy setup) for it.
 
 | Rule | Where enforced |
 |---|---|
-| Max 2% of account risked per trade | `riskManager.computePositionSize` — position size = (Account × Risk%) / Stop distance |
-| Max 3 concurrent positions | `riskManager.evaluateGate` |
+| Max 2% of account risked per trade (when auto-sizing) | `riskManager.computePositionSize` — position size = (Account × Risk%) / Stop distance |
 | -5% daily drawdown halts new entries | `state.updateBalance` sets `dailyHalted`; gate checks it |
 | -10% weekly drawdown pauses new entries | Same mechanism, weekly window |
 | 1h cooldown after 3 consecutive losses | `state.recordTradeResult` |
 | Emergency stop closes everything instantly | `POST /api/emergency-stop` → `executionEngine.emergencyCloseAll` |
-| Manual approval toggle | `POST /api/settings/manual-approval`, live-togglable from the dashboard |
+| Manual approval toggle (scanner/webhook signals) | `POST /api/settings/manual-approval`, live-togglable from the dashboard |
 | Live trading requires restart | `LIVE_TRADING_ENABLED` is read once at process boot from `.env`, not exposed as a runtime toggle anywhere in the API or UI |
 | Connection-drop safety | `process.on('uncaughtException', ...)` in `index.js` triggers `emergencyCloseAll` |
 
 Halts above stop *new entries*; they don't forcibly close positions already
 open (those still ride their own stop-loss/take-profit/trailing-stop/time-decay
-exits). Only the emergency stop button and the connection-drop handler close
-everything immediately.
+exits, if set — see below). Only the emergency stop button and the
+connection-drop handler close everything immediately.
+
+**No concurrent-position cap.** Removed at explicit request; the scanner and
+Manual Trade panel can open as many simultaneous positions as signals/clicks
+produce.
+
+**Stop-loss/take-profit are optional on manual trades.** The scanner and
+TradingView webhook always compute an ATR-based stop and ≥2:1 target, but the
+Manual Trade panel doesn't require either. Consequences worth knowing:
+auto risk-sizing (2% formula) can't size a position with no stop distance, so
+omitting a stop-loss forces you into manual quantity entry instead; and a
+position opened with no stop-loss has **no automatic downside protection at
+all** until the 24h time-decay close eventually flattens it (`POSITION_TIME_DECAY_HOURS`
+in `.env`) — that setting becomes the only real safety net for a stop-less
+trade, so lowering it changes how long you're exposed with nothing watching
+the downside.
+
+**Reset balance button** (`POST /api/reset-balance`, Settings panel): resets
+tracked balance, daily/weekly P&L baselines, and the loss-streak cooldown
+back to `STARTING_ACCOUNT_BALANCE_USDT`. In LIVE mode the raw balance number
+gets overwritten again within ~30s by the next real-balance poll (correct
+behavior — you can't force a live balance to be something it isn't); the
+daily/weekly baselines and cooldown reset durably either way. Mainly useful
+for resetting PAPER mode between test runs.
 
 ---
 

@@ -107,16 +107,24 @@ function createApiRouter() {
     }
   });
 
-  // Manual trade ticket: user-initiated (not scanner/webhook-generated), but
-  // still runs through the same risk gate as automated signals -- max
-  // concurrent positions, daily/weekly halts, cooldown, and kill switch all
-  // still apply. Only the RR/score signal-quality filters are skipped,
-  // since those are specific to the bot's own confidence scoring, not a
-  // human's deliberate entry.
+  // Manual trade ticket: user-initiated (not scanner/webhook-generated),
+  // fires immediately with no confirmation step. Still runs through the
+  // same risk gate as automated signals -- daily/weekly halts, cooldown,
+  // and kill switch all still apply. Skipped, at the user's explicit
+  // request: the RR/score signal-quality filters (specific to the bot's own
+  // confidence scoring, not a human's deliberate entry), the concurrent-
+  // position cap, and the requirement for a stop-loss/take-profit.
+  // Without a stop-loss, auto risk-sizing has nothing to size against, so
+  // a manual quantity is required in that case (enforced below); without
+  // either stop-loss or take-profit, the 24h time-decay close is the only
+  // guaranteed exit until the position is closed by hand.
   router.post('/trades/manual', async (req, res) => {
     const { symbol, direction, stopLoss, takeProfit, leverage, quantity } = req.body || {};
-    if (!symbol || !['LONG', 'SHORT'].includes(direction) || !stopLoss || !takeProfit) {
-      return res.status(400).json({ ok: false, error: 'symbol, direction (LONG|SHORT), stopLoss, takeProfit are required' });
+    if (!symbol || !['LONG', 'SHORT'].includes(direction)) {
+      return res.status(400).json({ ok: false, error: 'symbol and direction (LONG|SHORT) are required' });
+    }
+    if (!stopLoss && !quantity) {
+      return res.status(400).json({ ok: false, error: 'Provide a stop-loss (for auto risk-sizing) or a manual quantity' });
     }
     const gate = riskManager.evaluateGate(state);
     if (!gate.allowed) {
@@ -126,7 +134,11 @@ function createApiRouter() {
     try {
       const sym = symbol.toUpperCase();
       const entry = await exchange.getPrice(sym);
-      const riskReward = Math.abs(Number(takeProfit) - entry) / Math.abs(entry - Number(stopLoss));
+      const stop = stopLoss ? Number(stopLoss) : null;
+      const target = takeProfit ? Number(takeProfit) : null;
+      const riskReward = stop != null && target != null
+        ? Number((Math.abs(target - entry) / Math.abs(entry - stop)).toFixed(2))
+        : null;
 
       const record = {
         created_at: new Date().toISOString(),
@@ -135,9 +147,9 @@ function createApiRouter() {
         direction,
         score: 100,
         entry_price: entry,
-        stop_loss: Number(stopLoss),
-        take_profit: Number(takeProfit),
-        risk_reward: Number(riskReward.toFixed(2)),
+        stop_loss: stop,
+        take_profit: target,
+        risk_reward: riskReward,
         reasons: JSON.stringify(['Manually placed from dashboard']),
         source: 'MANUAL',
         status: 'APPROVED',
@@ -154,6 +166,17 @@ function createApiRouter() {
     } catch (e) {
       res.status(500).json({ ok: false, error: e.message });
     }
+  });
+
+  // Resets tracked balance and P&L baselines back to STARTING_ACCOUNT_BALANCE_USDT.
+  // In LIVE mode this is only durable for the daily/weekly baselines and the
+  // loss-streak/cooldown state -- the raw balance figure will be overwritten
+  // again by the next balancePoller tick (~30s) with the account's real
+  // Binance balance, which is correct: you can't force a live balance to be
+  // something it isn't. Mainly useful for resetting PAPER mode between runs.
+  router.post('/reset-balance', (req, res) => {
+    state.resetToStartingBalance();
+    res.json({ ok: true, state: state.toPublicJSON() });
   });
 
   router.post('/emergency-stop', async (req, res) => {

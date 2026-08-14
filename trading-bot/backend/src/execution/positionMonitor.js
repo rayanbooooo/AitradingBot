@@ -20,23 +20,28 @@ async function checkTrade(trade) {
   }
 
   const direction = trade.direction === 'LONG' ? 1 : -1;
-  const originalRiskDistance = Math.abs(trade.entry_price - trade.stop_loss);
+  const hasStop = trade.stop_loss != null;
+  const hasTarget = trade.take_profit != null;
+  const originalRiskDistance = hasStop ? Math.abs(trade.entry_price - trade.stop_loss) : null;
   const favorableMove = (price - trade.entry_price) * direction;
 
   // --- Time decay: close regardless of P&L once the position is stale ---
+  // This is the ONLY guaranteed exit for a position opened with no
+  // stop-loss/take-profit (manual trades may skip both) -- until this
+  // fires, such a position has no automatic downside protection at all.
   const ageHours = (Date.now() - new Date(trade.opened_at).getTime()) / (1000 * 60 * 60);
   if (ageHours >= config.risk.positionTimeDecayHours) {
     await executionEngine.closeTrade(trade, price, 'CLOSED_TIME_DECAY', `Open ${ageHours.toFixed(1)}h, past ${config.risk.positionTimeDecayHours}h time-decay limit`);
     return;
   }
 
-  // --- Stop-loss / take-profit ---
+  // --- Stop-loss / take-profit (skipped entirely if not set) ---
   // Paper trades have no broker enforcing these, so this loop is their only
   // exit mechanism. Live trades normally close via the broker-side
   // STOP_MARKET/TAKE_PROFIT_MARKET reduceOnly orders placed at entry; this
   // check is a redundant safety net in case that order is ever missed.
-  const hitStop = direction === 1 ? price <= trade.stop_loss : price >= trade.stop_loss;
-  const hitTarget = direction === 1 ? price >= trade.take_profit : price <= trade.take_profit;
+  const hitStop = hasStop && (direction === 1 ? price <= trade.stop_loss : price >= trade.stop_loss);
+  const hitTarget = hasTarget && (direction === 1 ? price >= trade.take_profit : price <= trade.take_profit);
   if (hitStop) {
     await executionEngine.closeTrade(trade, price, 'CLOSED_SL', 'Stop-loss hit');
     return;
@@ -46,8 +51,8 @@ async function checkTrade(trade) {
     return;
   }
 
-  // --- Trailing stop for winning trades ---
-  if (originalRiskDistance > 0 && favorableMove >= originalRiskDistance * TRAILING_ACTIVATION_R) {
+  // --- Trailing stop for winning trades (needs an original stop to trail from) ---
+  if (hasStop && originalRiskDistance > 0 && favorableMove >= originalRiskDistance * TRAILING_ACTIVATION_R) {
     const trailDistance = originalRiskDistance * TRAILING_TRAIL_FRACTION;
     const candidateStop = price - direction * trailDistance;
     const improved = direction === 1 ? candidateStop > trade.stop_loss : candidateStop < trade.stop_loss;
@@ -57,12 +62,14 @@ async function checkTrade(trade) {
       logger.info(`Trailing stop updated for ${trade.symbol} -> ${candidateStop.toFixed(6)}`);
 
       if (trade.mode === 'LIVE') {
-        // Replace the broker-side stop order at the new, tighter level.
+        // Replace the broker-side stop (and target, if one exists) at the new, tighter level.
         const closeSide = trade.direction === 'LONG' ? 'SELL' : 'BUY';
         try {
           await exchange.futuresCancelAll(trade.symbol);
           await exchange.futuresReduceOnlyStopOrder(trade.symbol, closeSide, trade.quantity, candidateStop, 'STOP_MARKET');
-          await exchange.futuresReduceOnlyStopOrder(trade.symbol, closeSide, trade.quantity, trade.take_profit, 'TAKE_PROFIT_MARKET');
+          if (hasTarget) {
+            await exchange.futuresReduceOnlyStopOrder(trade.symbol, closeSide, trade.quantity, trade.take_profit, 'TAKE_PROFIT_MARKET');
+          }
         } catch (e) {
           logger.error(`Failed to replace broker-side trailing stop for ${trade.symbol}: ${e.message || e}`);
         }
