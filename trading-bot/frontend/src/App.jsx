@@ -154,7 +154,7 @@ export default function App() {
           <ManualTradePanel symbols={symbols} />
           <HeatMap trades={history} />
           <RiskCalculator />
-          <SettingsPanel appState={appState} onChanged={() => api.getState().then(setAppState)} />
+          <SettingsPanel appState={appState} onChanged={() => api.getState().then(setAppState)} demoMode={demoMode} />
           <AlertFeed alerts={alerts} />
         </div>
       </div>

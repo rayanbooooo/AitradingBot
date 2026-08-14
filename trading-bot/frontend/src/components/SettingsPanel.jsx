@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
 
-export default function SettingsPanel({ appState, onChanged }) {
+export default function SettingsPanel({ appState, onChanged, demoMode }) {
   const [resetting, setResetting] = useState(false);
 
   async function toggleApproval() {
@@ -65,6 +65,7 @@ export default function SettingsPanel({ appState, onChanged }) {
           <div className="settings-hint">
             Resets tracked balance and P&amp;L baselines to the configured starting amount.
             {appState.liveTradingEnabled && ' In LIVE mode, the raw balance figure re-syncs to your real Binance balance again within ~30s -- only the daily/weekly baselines and cooldown reset durably.'}
+            {demoMode && ' Also clears any stuck kill-switch or manual-approval state left over from earlier testing.'}
           </div>
         </div>
         <button className="btn btn-small btn-secondary" onClick={resetBalance} disabled={resetting}>

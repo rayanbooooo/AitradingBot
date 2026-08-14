@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { api } from '../api.js';
 
 export default function ActiveTrades({ trades, livePrices, onClosed }) {
+  const [error, setError] = useState(null);
+
   async function close(id) {
     if (!window.confirm('Close this position now at market price?')) return;
-    await api.closeTrade(id);
-    onClosed();
+    setError(null);
+    try {
+      await api.closeTrade(id);
+      onClosed();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
     <div className="panel">
       <div className="panel-title">Active Trades ({trades.length})</div>
+      {error && <div className="error-text">{error}</div>}
       <div className="table-wrap">
         <table>
           <thead>

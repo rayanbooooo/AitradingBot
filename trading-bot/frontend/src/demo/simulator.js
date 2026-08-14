@@ -422,6 +422,13 @@ export const demoApi = {
     state.cooldownUntil = null;
     state.dailyHalted = false;
     state.weeklyHalted = false;
+    // Demo-only, no real money involved -- also clear anything that could
+    // silently block execution from an earlier test session (a stuck kill
+    // switch from clicking Emergency Stop, or manual approval left on from
+    // localStorage persisted before the default changed to auto-execute).
+    state.killSwitchActive = false;
+    state.killSwitchReason = null;
+    state.manualApprovalRequired = false;
     persist();
     emit('state', publicState());
     return { ok: true, state: publicState() };

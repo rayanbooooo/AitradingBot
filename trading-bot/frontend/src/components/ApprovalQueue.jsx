@@ -1,21 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { api } from '../api.js';
 
 export default function ApprovalQueue({ pending, onResolved }) {
+  const [error, setError] = useState(null);
   if (!pending.length) return null;
 
   async function approve(id) {
-    await api.approveSignal(id);
-    onResolved();
+    setError(null);
+    try {
+      await api.approveSignal(id);
+      onResolved();
+    } catch (err) {
+      setError(err.message);
+    }
   }
   async function reject(id) {
-    await api.rejectSignal(id);
-    onResolved();
+    setError(null);
+    try {
+      await api.rejectSignal(id);
+      onResolved();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
     <div className="panel panel-alert">
       <div className="panel-title">⏳ Awaiting Your Approval ({pending.length})</div>
+      {error && <div className="error-text">{error}</div>}
       <div className="table-wrap">
         <table>
           <thead>
