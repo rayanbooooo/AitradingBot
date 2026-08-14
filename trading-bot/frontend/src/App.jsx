@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useWebSocket } from './useWebSocket.js';
+import { useAuth } from './AuthContext.jsx';
+import Login from './components/Login.jsx';
 import Header from './components/Header.jsx';
 import PriceChart from './components/PriceChart.jsx';
 import MarketScanner from './components/MarketScanner.jsx';
@@ -17,6 +19,7 @@ import AlertFeed from './components/AlertFeed.jsx';
 const TIMEFRAMES = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
 export default function App() {
+  const { enabled: authEnabled, loading: authLoading, user, signOut } = useAuth();
   const [appState, setAppState] = useState(null);
   const [connected, setConnected] = useState(false);
   const [signals, setSignals] = useState([]);
@@ -111,6 +114,8 @@ export default function App() {
     await api.clearEmergencyStop();
   }
 
+  if (authEnabled && authLoading) return <div className="loading">Loading...</div>;
+  if (authEnabled && !user) return <Login />;
   if (!appState) return <div className="loading">Connecting to backend...</div>;
 
   return (
@@ -120,7 +125,15 @@ export default function App() {
         <div className="hud-glow-b" />
         <div className="hud-scanline" />
       </div>
-      <Header appState={appState} connected={connected} demoMode={demoMode} onEmergencyStop={handleEmergencyStop} onClearStop={handleClearStop} />
+      <Header
+        appState={appState}
+        connected={connected}
+        demoMode={demoMode}
+        onEmergencyStop={handleEmergencyStop}
+        onClearStop={handleClearStop}
+        userEmail={authEnabled ? user?.email : null}
+        onSignOut={authEnabled ? signOut : null}
+      />
       <div className="layout">
         <div className="layout-main">
           <PriceChart

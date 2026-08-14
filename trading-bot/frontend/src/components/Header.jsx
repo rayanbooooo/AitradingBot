@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ appState, connected, demoMode, onEmergencyStop, onClearStop }) {
+export default function Header({ appState, connected, demoMode, onEmergencyStop, onClearStop, userEmail, onSignOut }) {
   const mode = appState?.liveTradingEnabled ? 'LIVE' : 'PAPER / SIGNAL-ONLY';
   const modeClass = appState?.liveTradingEnabled ? 'mode-live' : 'mode-paper';
 
@@ -47,6 +47,12 @@ export default function Header({ appState, connected, demoMode, onEmergencyStop,
             <button className="btn btn-secondary" onClick={onClearStop}>Clear Kill Switch</button>
           ) : (
             <button className="btn btn-danger" onClick={onEmergencyStop}>🛑 EMERGENCY STOP</button>
+          )}
+          {userEmail && (
+            <div className="account-chip">
+              <span className="account-email">{userEmail}</span>
+              <button className="btn btn-small btn-secondary" onClick={onSignOut}>Sign Out</button>
+            </div>
           )}
         </div>
       </header>
