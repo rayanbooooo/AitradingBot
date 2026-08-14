@@ -35,7 +35,7 @@ const MONITOR_INTERVAL_MS = 20000;
 
 function defaultState() {
   return {
-    manualApprovalRequired: true,
+    manualApprovalRequired: false,
     killSwitchActive: false,
     killSwitchReason: null,
     accountBalance: STARTING_BALANCE,
