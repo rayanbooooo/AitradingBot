@@ -4,7 +4,10 @@ An autonomous market scanner, signal engine, risk manager, and Binance execution
 system with a real-time React dashboard.
 
 **Read "Important: what this is and isn't" below before you put real money behind
-this.**
+this.** Picking this project back up in a new conversation? Read
+[`SESSION_NOTES.md`](./SESSION_NOTES.md) first — it has the current live
+configuration and the deliberate risk-tradeoff decisions made along the way
+that aren't captured anywhere else.
 
 ---
 
