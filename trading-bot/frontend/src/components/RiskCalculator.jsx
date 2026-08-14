@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
-import { demoAppState } from '../demoData.js';
 
-export default function RiskCalculator({ demoMode }) {
+export default function RiskCalculator() {
   const [entry, setEntry] = useState('');
   const [stopLoss, setStopLoss] = useState('');
   const [result, setResult] = useState(null);
@@ -11,22 +10,6 @@ export default function RiskCalculator({ demoMode }) {
   async function calculate(e) {
     e.preventDefault();
     setError(null);
-    if (demoMode) {
-      // No backend to ask -- replicate the same 2%-of-account formula
-      // client-side against the sample account balance.
-      const riskPercent = 2;
-      const riskAmountUsdt = demoAppState.accountBalance * (riskPercent / 100);
-      const quantity = riskAmountUsdt / Math.abs(Number(entry) - Number(stopLoss));
-      setResult({
-        accountBalance: demoAppState.accountBalance,
-        riskPercent,
-        riskAmountUsdt: Number(riskAmountUsdt.toFixed(2)),
-        quantity: Number(quantity.toFixed(6)),
-        notionalUsdt: Number((quantity * Number(entry)).toFixed(2)),
-        estimatedLocally: true,
-      });
-      return;
-    }
     try {
       const r = await api.riskCalculator(Number(entry), Number(stopLoss));
       setResult(r);

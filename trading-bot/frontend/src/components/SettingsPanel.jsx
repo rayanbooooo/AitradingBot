@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
 
-export default function SettingsPanel({ appState, onChanged, demoMode }) {
+export default function SettingsPanel({ appState, onChanged }) {
   const [resetting, setResetting] = useState(false);
 
   async function toggleApproval() {
-    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     await api.setManualApproval(!appState.manualApprovalRequired);
     onChanged();
   }
 
   async function resetBalance() {
-    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     if (!window.confirm('Reset tracked balance, daily/weekly baselines, and loss-streak cooldown back to the configured starting balance?')) return;
     setResetting(true);
     try {

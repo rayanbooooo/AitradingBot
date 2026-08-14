@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { api } from './api.js';
+import { subscribe as subscribeDemoEvents } from './demo/simulator.js';
 
 // Same-origin default assumes the backend's WS server is reachable on the
 // current host at :4001 (local dev, or a VPS serving both). A Vercel-hosted
@@ -9,10 +11,15 @@ const WS_URL =
   import.meta.env.VITE_WS_URL ||
   `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.hostname}:4001`;
 
+const REAL_WS_MAX_ATTEMPTS = 3;
+
 /**
- * Subscribes to the backend's WebSocket push feed. Also fires browser
- * desktop notifications for new signals and fills -- this is the reliable
- * notification channel when the backend runs headless/in a container,
+ * Subscribes to live updates: the backend's real WebSocket push feed when
+ * one is reachable, or the browser demo simulator's local event bus when
+ * api.js has fallen back to demo mode (same {type, payload} message shape
+ * either way, so App.jsx's handler doesn't need to know which is live).
+ * Also fires browser desktop notifications for new signals and fills --
+ * the reliable channel when a real backend runs headless/in a container,
  * where node-notifier has no OS notification daemon to talk to.
  */
 export function useWebSocket(onMessage) {
@@ -26,8 +33,23 @@ export function useWebSocket(onMessage) {
 
     let socket;
     let reconnectTimer;
+    let attempts = 0;
+    let unsubscribeDemo;
+    let stopped = false;
+
+    function useDemoBus() {
+      unsubscribeDemo = subscribeDemoEvents((msg) => {
+        handlerRef.current(msg);
+        maybeNotify(msg);
+      });
+    }
 
     function connect() {
+      if (api.isDemoMode()) {
+        useDemoBus();
+        return;
+      }
+
       socket = new WebSocket(WS_URL);
 
       socket.onmessage = (event) => {
@@ -37,6 +59,15 @@ export function useWebSocket(onMessage) {
       };
 
       socket.onclose = () => {
+        if (stopped) return;
+        attempts += 1;
+        // After a few failed attempts, api.js has almost certainly already
+        // flipped to demo mode (its own getState() call fails fast) --
+        // switch to the demo bus instead of retrying a dead socket forever.
+        if (attempts >= REAL_WS_MAX_ATTEMPTS && api.isDemoMode()) {
+          useDemoBus();
+          return;
+        }
         reconnectTimer = setTimeout(connect, 2000);
       };
 
@@ -45,8 +76,10 @@ export function useWebSocket(onMessage) {
 
     connect();
     return () => {
+      stopped = true;
       clearTimeout(reconnectTimer);
       if (socket) socket.close();
+      if (unsubscribeDemo) unsubscribeDemo();
     };
   }, []);
 }

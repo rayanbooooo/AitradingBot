@@ -1,16 +1,14 @@
 import React from 'react';
 import { api } from '../api.js';
 
-export default function ApprovalQueue({ pending, onResolved, demoMode }) {
+export default function ApprovalQueue({ pending, onResolved }) {
   if (!pending.length) return null;
 
   async function approve(id) {
-    if (demoMode) return window.alert('Static preview -- no live backend to execute against.');
     await api.approveSignal(id);
     onResolved();
   }
   async function reject(id) {
-    if (demoMode) return window.alert('Static preview -- no live backend to send this to.');
     await api.rejectSignal(id);
     onResolved();
   }

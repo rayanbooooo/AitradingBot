@@ -8,8 +8,8 @@ export default function Header({ appState, connected, demoMode, onEmergencyStop,
     <>
       {demoMode && (
         <div className="demo-banner">
-          Static preview with sample data -- no live backend is running behind this page. Run the backend
-          locally (see README) to see it trade for real.
+          Demo account -- running on live Binance market data with simulated order fills, no real money or
+          backend involved. Run the backend locally (see README) to connect a real Binance account.
         </div>
       )}
       <header className="header">

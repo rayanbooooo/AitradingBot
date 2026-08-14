@@ -1,12 +1,26 @@
 import React from 'react';
 import { api } from '../api.js';
 
-export default function TradeHistory({ trades }) {
+export default function TradeHistory({ trades, demoMode }) {
+  function exportDemoCsv() {
+    const blob = new Blob([api.exportCsvNow()], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'trade-history.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="panel">
       <div className="panel-title">
         Trade History (last {trades.length})
-        <a className="btn btn-small btn-secondary export-link" href={api.exportCsvUrl()} download>Export CSV</a>
+        {demoMode ? (
+          <button type="button" className="btn btn-small btn-secondary export-link" onClick={exportDemoCsv}>Export CSV</button>
+        ) : (
+          <a className="btn btn-small btn-secondary export-link" href={api.exportCsvUrl()} download>Export CSV</a>
+        )}
       </div>
       <div className="table-wrap">
         <table>

@@ -8,9 +8,17 @@ import React, { useEffect, useId, useRef } from 'react';
 //
 // Tradeoff accepted knowingly: this renders TradingView's own market-data
 // feed for the symbol, not our backend's candles, so the bot's entry/stop-
-// loss/take-profit lines can no longer be drawn directly on it the way the
-// old lightweight-charts version did. Use the Active Trades panel for exact
-// executed levels; use this chart for analysis and drawing.
+// loss/take-profit lines can no longer be drawn directly on it. Use the
+// Active Trades panel for exact executed levels; use this chart for
+// analysis and drawing.
+//
+// Symbol/timeframe switching is done by fully recreating the widget with
+// new constructor options rather than calling chart().setSymbol()/
+// setResolution() on a live instance -- the free embed's support for that
+// imperative API turned out to be unreliable in practice (confirmed: the
+// dropdowns visibly did nothing). Recreating on prop change is a bit more
+// jarring (brief reload flash) but uses the one code path guaranteed to
+// work, since it's the same as the initial load.
 const TV_SCRIPT_SRC = 'https://s3.tradingview.com/tv.js';
 let tvScriptPromise = null;
 function loadTradingViewScript() {
@@ -33,11 +41,10 @@ const INTERVAL_MAP = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240
 export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe, timeframes, onTimeframeChange }) {
   const containerId = `tv_chart_${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const widgetRef = useRef(null);
-  const readyRef = useRef(false);
 
-  // Create the widget once on mount.
   useEffect(() => {
     let cancelled = false;
+
     loadTradingViewScript().then(() => {
       if (cancelled || !window.TradingView) return;
       widgetRef.current = new window.TradingView.widget({
@@ -55,37 +62,22 @@ export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe,
         withdateranges: true,
         container_id: containerId,
       });
-      widgetRef.current.onChartReady(() => {
-        readyRef.current = true;
-      });
     });
+
     return () => {
       cancelled = true;
-      readyRef.current = false;
+      if (widgetRef.current && typeof widgetRef.current.remove === 'function') {
+        try {
+          widgetRef.current.remove();
+        } catch {
+          // Widget may already be torn down by the iframe unmounting -- fine to ignore.
+        }
+      }
+      widgetRef.current = null;
     };
+    // Recreate the whole widget on symbol/timeframe change -- see file header.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerId]);
-
-  // Keep the widget in sync when our own symbol/timeframe dropdowns change.
-  // (One-way: if the user changes symbol from inside TradingView's own UI,
-  // our dropdowns won't know about it -- the embed doesn't expose that back.)
-  useEffect(() => {
-    if (!readyRef.current || !widgetRef.current) return;
-    try {
-      widgetRef.current.chart().setSymbol(`BINANCE:${symbol}`, () => {});
-    } catch {
-      // Chart not ready yet or was torn down -- next symbol change will retry.
-    }
-  }, [symbol]);
-
-  useEffect(() => {
-    if (!readyRef.current || !widgetRef.current) return;
-    try {
-      widgetRef.current.chart().setResolution(INTERVAL_MAP[timeframe] || '5', () => {});
-    } catch {
-      // Same as above.
-    }
-  }, [timeframe]);
+  }, [containerId, symbol, timeframe]);
 
   return (
     <div className="panel chart-panel">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
-export default function ManualTradePanel({ symbols, demoMode }) {
+export default function ManualTradePanel({ symbols }) {
   const [symbol, setSymbol] = useState('BTCUSDT');
   const [direction, setDirection] = useState('LONG');
   const [price, setPrice] = useState(null);
@@ -15,18 +15,17 @@ export default function ManualTradePanel({ symbols, demoMode }) {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (demoMode) return;
     let cancelled = false;
     api.getPrice(symbol).then((r) => !cancelled && setPrice(r.price)).catch(() => setPrice(null));
     return () => { cancelled = true; };
-  }, [symbol, demoMode]);
+  }, [symbol]);
 
   useEffect(() => {
-    if (demoMode || sizeMode !== 'auto' || !price || !stopLoss) return setPreview(null);
+    if (sizeMode !== 'auto' || !price || !stopLoss) return setPreview(null);
     let cancelled = false;
     api.riskCalculator(price, Number(stopLoss)).then((r) => !cancelled && setPreview(r)).catch(() => setPreview(null));
     return () => { cancelled = true; };
-  }, [price, stopLoss, sizeMode, demoMode]);
+  }, [price, stopLoss, sizeMode]);
 
   // Auto-sizing has nothing to size against without a stop distance --
   // a manual quantity is the only way to size a stop-less trade.
@@ -35,7 +34,6 @@ export default function ManualTradePanel({ symbols, demoMode }) {
   async function submit(e) {
     e.preventDefault();
     setResult(null);
-    if (demoMode) return setResult({ ok: false, error: 'Static preview -- no live backend to send this to.' });
     if (needsManualQty) {
       return setResult({ ok: false, error: 'No stop-loss set -- switch sizing to manual and enter a quantity, or add a stop-loss.' });
     }
