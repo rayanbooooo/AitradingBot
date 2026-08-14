@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 
 // TradingView's free embeddable "Advanced Real-Time Chart" widget -- this is
 // the actual TradingView UI (pen tool, trendlines, fib retracement, shapes,
@@ -38,12 +38,21 @@ function loadTradingViewScript() {
 
 const INTERVAL_MAP = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1d': 'D' };
 
+// TradingView's CDN can fail to load for reasons outside this app's control
+// (ad blockers, privacy extensions, corporate/network filtering) -- without
+// an explicit loading/error state the chart panel just stays a blank black
+// rectangle forever, which is easy to mistake for the whole page being broken.
+const LOAD_TIMEOUT_MS = 12000;
+
 export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe, timeframes, onTimeframeChange }) {
   const containerId = `tv_chart_${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const widgetRef = useRef(null);
+  const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error'
 
   useEffect(() => {
     let cancelled = false;
+    setStatus('loading');
+    const timeout = setTimeout(() => !cancelled && setStatus('error'), LOAD_TIMEOUT_MS);
 
     loadTradingViewScript().then(() => {
       if (cancelled || !window.TradingView) return;
@@ -62,10 +71,16 @@ export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe,
         withdateranges: true,
         container_id: containerId,
       });
+      clearTimeout(timeout);
+      if (!cancelled) setStatus('ready');
+    }).catch(() => {
+      clearTimeout(timeout);
+      if (!cancelled) setStatus('error');
     });
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
       if (widgetRef.current && typeof widgetRef.current.remove === 'function') {
         try {
           widgetRef.current.remove();
@@ -96,7 +111,16 @@ export default function PriceChart({ symbol, symbols, onSymbolChange, timeframe,
           </select>
         </div>
       </div>
-      <div id={containerId} style={{ height: 560 }} />
+      <div className="chart-container" style={{ height: 560, position: 'relative' }}>
+        {status !== 'ready' && (
+          <div className="chart-fallback">
+            {status === 'loading'
+              ? 'Loading TradingView chart...'
+              : "Chart failed to load -- TradingView's CDN may be blocked by an ad blocker, privacy extension, or network filter. The rest of the dashboard still works normally."}
+          </div>
+        )}
+        <div id={containerId} style={{ height: '100%' }} />
+      </div>
     </div>
   );
 }
