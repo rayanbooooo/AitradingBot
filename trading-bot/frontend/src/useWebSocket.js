@@ -50,7 +50,18 @@ export function useWebSocket(onMessage) {
         return;
       }
 
-      socket = new WebSocket(WS_URL);
+      try {
+        socket = new WebSocket(WS_URL);
+      } catch {
+        // Most commonly a SecurityError: WS_URL was ws:// (insecure) on a
+        // page loaded over https -- e.g. a stale VITE_WS_URL env var left
+        // pointing at a local backend. A bad/misconfigured URL must not be
+        // able to take down the whole app -- fall back to the demo bus
+        // instead (it's a no-op until/unless api.js separately falls back
+        // to demo mode, which is harmless).
+        useDemoBus();
+        return;
+      }
 
       socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);

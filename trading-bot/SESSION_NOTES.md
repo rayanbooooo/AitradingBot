@@ -98,11 +98,29 @@ restart (not a runtime toggle anywhere).
   instead). This was verified working via a screenshot from the user's own
   browser — could not be visually confirmed from the build sandbox itself
   (its network policy blocks TradingView's CDN, among other domains).
-- **A Vercel deployment exists** as a **static preview only** — no live
-  backend behind it, shows hardcoded sample data with a banner saying so.
-  It is not connected to the user's real trading and doesn't need to be
-  kept in sync for the bot to work; only touch it if the user asks about
-  the hosted preview link specifically.
+- **A Vercel deployment exists** (`ai-trading-bot-dashboard-two.vercel.app`).
+  It used to be a static preview with hardcoded sample data; it's now a
+  genuinely functional **client-side demo simulator**
+  (`frontend/src/demo/`) that scans real Binance public market data, scores
+  signals with the same logic as the backend, and simulates fills/P&L in
+  `localStorage` — every dashboard action (manual trades, approvals,
+  settings, CSV export) actually works on that link with no backend
+  required. `api.js` transparently falls back to it when no backend is
+  reachable. It is still not connected to the user's real trading account
+  — no real money, no real backend — but it's no longer just sample data on
+  a page.
+- **Do not set `VITE_WS_URL`/`VITE_API_BASE` in the Vercel project's env
+  vars unless a real backend is actually deployed and reachable over
+  HTTPS/WSS.** If either points at something insecure (`ws://`/`http://`,
+  e.g. a leftover value pointing at the user's local machine) while the
+  page loads over `https://`, the browser throws a `SecurityError`
+  constructing the WebSocket — this crashed the entire page (blank black
+  screen, no error shown) before `useWebSocket.js` wrapped the constructor
+  in try/catch and `main.jsx` got a top-level `ErrorBoundary`. Both are
+  fixed now, but leaving a stale insecure `VITE_WS_URL` set is still the
+  likely explanation if the user ever reports the hosted link going blank
+  again — check that in the Vercel dashboard's project settings (not
+  accessible from this repo or a build sandbox).
 
 ## Sandbox limitations worth knowing
 
